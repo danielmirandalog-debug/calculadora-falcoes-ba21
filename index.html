@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>CALCULADORA DE TAXAS FALCÕES DA BA21</title>
+
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<script src="app.js" defer></script>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f2f2f2;
+padding:20px;
+}
+
+h1{
+text-align:center;
+}
+
+.container{
+background:white;
+padding:20px;
+border-radius:10px;
+max-width:600px;
+margin:auto;
+}
+
+input,select{
+width:100%;
+padding:10px;
+margin-bottom:10px;
+}
+
+button{
+width:100%;
+padding:12px;
+margin-top:10px;
+background:black;
+color:white;
+border:none;
+border-radius:6px;
+cursor:pointer;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:20px;
+}
+
+td,th{
+border:1px solid #ccc;
+padding:8px;
+text-align:center;
+}
+
+.mp{
+background:#ffe066;
+}
+
+.outras{
+background:#111;
+color:white;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>🦅 CALCULADORA DE TAXAS FALCÕES DA BA21</h1>
+
+<div class="container">
+
+<label>Valor da venda</label>
+<input id="valor">
+
+<label>Modo de simulação</label>
+
+<select id="modo">
+
+<option value="mp">Mercado Pago</option>
+
+<option value="outras">Outras adquirências</option>
+
+<option value="comparar">Comparar</option>
+
+</select>
+
+<h3>Mercado Pago</h3>
+
+<label>Pix %</label>
+<input id="mp_pix">
+
+<label>Débito %</label>
+<input id="mp_debito">
+
+<label>1x %</label>
+<input id="mp1">
+
+<div id="mpParcelas"></div>
+
+<h3>Outras adquirências</h3>
+
+<label>Pix %</label>
+<input id="out_pix">
+
+<label>Débito %</label>
+<input id="out_debito">
+
+<label>1x %</label>
+<input id="out1">
+
+<label>MDR 2-6x</label>
+<input id="mdr1">
+
+<label>MDR 7-12x</label>
+<input id="mdr2">
+
+<label>MDR 13-21x</label>
+<input id="mdr3">
+
+<label>Taxa de antecipação mensal %</label>
+<input id="antecipacao">
+
+<h3>Custos adicionais</h3>
+
+<label>Software seller</label>
+<input id="custoSeller">
+
+<label>Cesta de serviços</label>
+<input id="custoConta">
+
+<label>Aluguel da máquina</label>
+<input id="custoMaquina">
+
+<button onclick="simular()">SIMULAR</button>
+
+<button onclick="exportar()">EXPORTAR PNG</button>
+
+</div>
+
+<div id="resultado"></div>
+
+</body>
+</html>
