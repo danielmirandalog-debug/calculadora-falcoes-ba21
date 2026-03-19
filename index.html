@@ -14,11 +14,14 @@
         body{ font-family:Segoe UI,Arial; background:#FFFDE7; margin:0; }
         header{ background:#FFE600; color:#333; padding:15px; text-align:center; font-size:22px; font-weight:bold; }
         .container{ max-width:900px; margin:auto; padding:20px; }
-        .card{ background:white; padding:20px; margin-bottom:20px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.08); border-top:4px solid #FFE600; }
+        .card{ background:white; padding:20px; margin-bottom:20px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.08); border-top:4px solid #FFE600; position: relative; }
+        h3 { margin-top: 0; display: flex; justify-content: space-between; align-items: center; }
         input{ width:100%; padding:8px; margin-bottom:10px; border:1px solid #ddd; border-radius:5px; box-sizing: border-box; }
         input:focus{ outline:none; border-color:#3483FA; box-shadow:0 0 0 2px rgba(52,131,250,0.15); }
         button{ width:100%; padding:12px; margin-top:10px; border:none; border-radius:6px; background:#FFE600; color:#333; font-weight:bold; cursor:pointer; transition:0.2s; }
         button:hover{ background:#ffd400; }
+        .btn-limpar { width: auto; padding: 5px 10px; font-size: 11px; background: #f0f0f0; color: #666; margin: 0; }
+        .btn-limpar:hover { background: #e0e0e0; }
         table{ width:100%; border-collapse:collapse; font-size:11px; margin-top: 10px; }
         td,th{ border:1px solid #eee; padding:4px; text-align:center; }
         th{ background:#FFF3A0; }
@@ -29,21 +32,7 @@
         .barraContainer{ width:100%; height:22px; background:#f0f0f0; border-radius:12px; overflow:hidden; margin-bottom:20px; }
         .barraProgresso{ height:100%; width:0%; background:#FFE600; transition:width 0.3s; }
         .info-data { font-size: 10px; color: #999; text-align: right; margin-top: 5px; }
-        
-        /* Estilo para os botões de upload que parecem botões normais */
-        .btn-upload {
-            background-color: #f4f4f4;
-            color: #333;
-            border: 1px solid #ddd;
-            padding: 10px;
-            border-radius: 6px;
-            display: inline-block;
-            cursor: pointer;
-            width: 100%;
-            text-align: center;
-            box-sizing: border-box;
-            margin-bottom: 10px;
-        }
+        .btn-upload { background-color: #f4f4f4; color: #333; border: 1px solid #ddd; padding: 10px; border-radius: 6px; display: inline-block; cursor: pointer; width: 100%; text-align: center; box-sizing: border-box; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -58,22 +47,22 @@
         <input id="valor" type="number" placeholder="0,00">
     </div>
 
-    <div class="card">
-        <h3>Mercado Pago</h3>
-        <label>Pix (%)</label> <input id="mp_pix" type="number" step="0.01">
-        <label>Débito (%)</label> <input id="mp_debito" type="number" step="0.01">
-        <label>Crédito 1x (%)</label> <input id="mp1" type="number" step="0.01">
+    <div class="card" id="secaoMP">
+        <h3>Mercado Pago <button class="btn-limpar" onclick="limparSecao('mp')">Limpar Taxas</button></h3>
+        <label>Pix (%)</label> <input id="mp_pix" type="number" step="0.01" value="0.49">
+        <label>Débito (%)</label> <input id="mp_debito" type="number" step="0.01" value="0.99">
+        <label>Crédito 1x (%)</label> <input id="mp1" type="number" step="0.01" value="3.05">
         
         <h4>Importar taxas por foto</h4>
         <label class="btn-upload">
-            <input type="file" id="uploadOCR" accept="image/*" capture="camera" style="display:none">
-            📷 Abrir Câmera ou Galeria
+            <input type="file" id="uploadOCR" accept="image/*" style="display:none" onclick="prepararOCR('mp')">
+            📷 Escolher Foto ou Câmera
         </label>
         <div id="mpParcelas"></div>
     </div>
 
-    <div class="card">
-        <h3>Concorrência</h3>
+    <div class="card" id="secaoConc">
+        <h3>Concorrência <button class="btn-limpar" onclick="limparSecao('out')">Limpar Taxas</button></h3>
         <div class="radioLinha">
             <label><input type="radio" name="modoOutras" value="mdr" checked onchange="trocarModoOutras()"> MDR + Antecipação</label>
             <label><input type="radio" name="modoOutras" value="manual" onchange="trocarModoOutras()"> Manual</label>
@@ -95,8 +84,8 @@
             <label>Crédito 1x (%)</label> <input id="out1_manual" type="number" step="0.01">
             <h4>Importar taxas por foto</h4>
             <label class="btn-upload">
-                <input type="file" id="uploadOCRConc" accept="image/*" capture="camera" style="display:none">
-                📷 Abrir Câmera ou Galeria
+                <input type="file" id="uploadOCRConc" accept="image/*" style="display:none" onclick="prepararOCR('out')">
+                📷 Escolher Foto ou Câmera
             </label>
             <div id="outrasParcelas"></div>
         </div>
@@ -110,7 +99,7 @@
 
     <div class="card">
         <div class="tituloFat">
-            <h3>Simulação de Faturamento Mensal</h3>
+            <h3>Share de Vendas <button class="btn-limpar" onclick="limparSecao('share')">Limpar Share</button></h3>
             <div class="contador" id="contador">0%</div>
         </div>
         <div class="barraContainer">
@@ -120,24 +109,22 @@
         <label>Faturamento mensal total (R$)</label>
         <input id="faturamento" type="number">
 
-        <label>Distribuição de Vendas (Share %)</label>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <span>Pix: <input id="share_pix" oninput="atualizarBarra()" type="number"></span>
-            <span>Débito: <input id="share_debito" oninput="atualizarBarra()" type="number"></span>
-            <span>1x: <input id="share_1x" oninput="atualizarBarra()" type="number"></span>
-            <span>2x: <input id="share_2x" oninput="atualizarBarra()" type="number"></span>
-            <span>4x: <input id="share_4x" oninput="atualizarBarra()" type="number"></span>
-            <span>6x: <input id="share_6x" oninput="atualizarBarra()" type="number"></span>
-            <span>10x: <input id="share_10x" oninput="atualizarBarra()" type="number"></span>
+            <span>Pix: <input id="share_pix" oninput="atualizarBarra()" type="number" class="input-share"></span>
+            <span>Débito: <input id="share_debito" oninput="atualizarBarra()" type="number" class="input-share"></span>
+            <span>1x: <input id="share_1x" oninput="atualizarBarra()" type="number" class="input-share"></span>
+            <span>2x: <input id="share_2x" oninput="atualizarBarra()" type="number" class="input-share"></span>
+            <span>4x: <input id="share_4x" oninput="atualizarBarra()" type="number" class="input-share"></span>
+            <span>6x: <input id="share_6x" oninput="atualizarBarra()" type="number" class="input-share"></span>
+            <span>10x: <input id="share_10x" oninput="atualizarBarra()" type="number" class="input-share"></span>
         </div>
 
-        <h3>Custos Fixos (Concorrência)</h3>
-        <label>Sistema/Aluguel/Taxas Bancárias (Soma Mensal R$)</label>
-        <input id="custos_fixos_total" type="number" placeholder="Ex: 250.00">
+        <h3>Custos Fixos e Investimento <button class="btn-limpar" onclick="limparSecao('cofrinho')">Limpar Cofrinho</button></h3>
+        <label>Custos Fixos Concorrência (R$)</label>
+        <input id="custos_fixos_total" type="number">
 
-        <h3>Cofrinho Mercado Pago</h3>
-        <label>Reserva Mensal (R$)</label>
-        <input id="cofrinho_reserva" type="number" placeholder="Quanto vai poupar/mês">
+        <label>Reserva Mensal Cofrinho (R$)</label>
+        <input id="cofrinho_reserva" type="number">
         <label>CDI Base Atual (% ao ano - Automático)</label>
         <input id="cofrinho_percentual" type="number" step="0.01">
 
