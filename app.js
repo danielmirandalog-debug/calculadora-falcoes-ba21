@@ -13,13 +13,11 @@ window.onload = function() {
     document.getElementById("uploadOCR").addEventListener("change", processarOCRMP);
     document.getElementById("uploadOCRConc").addEventListener("change", processarOCRConc);
 
-    // Busca CDI do Banco Central ao iniciar
     buscarCDIAtual();
 }
 
 async function buscarCDIAtual() {
     try {
-        // Série 432: Meta Selic definida pelo COPOM
         const resp = await fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados/ultimos/1?formato=json');
         const dados = await resp.json();
         const taxa = parseFloat(dados[0].valor);
@@ -77,7 +75,6 @@ function simular() {
     }
 
     gerarTabela(valor, mp, outras);
-    
     let agora = new Date();
     document.getElementById("dataSimulacao").innerText = "Simulação realizada em: " + agora.toLocaleString();
 }
@@ -113,43 +110,58 @@ function atualizarBarra() {
 
 function simularFaturamento() {
     let fat = parseFloat(document.getElementById("faturamento").value) || 0;
-    let s_pix = parseFloat(share_pix.value) || 0;
-    let s_deb = parseFloat(share_debito.value) || 0;
-    let s_1 = parseFloat(share_1x.value) || 0;
-    let s_2 = parseFloat(share_2x.value) || 0;
-    let s_4 = parseFloat(share_4x.value) || 0;
-    let s_6 = parseFloat(share_6x.value) || 0;
-    let s_10 = parseFloat(share_10x.value) || 0;
+    let shareInputs = ["share_pix", "share_debito", "share_1x", "share_2x", "share_4x", "share_6x", "share_10x"];
+    let totalPercent = 0;
+    shareInputs.forEach(id => totalPercent += parseFloat(document.getElementById(id).value) || 0);
 
-    if ((s_pix + s_deb + s_1 + s_2 + s_4 + s_6 + s_10) !== 100) {
-        alert("A soma do Share de vendas deve ser 100%"); return;
+    if (totalPercent !== 100) { alert("A soma do Share de vendas deve ser 100%"); return; }
+
+    // Obter taxas de MP
+    let mps = { pix: mp_pix.value, deb: mp_debito.value, c1: mp1.value, c2: mp2.value, c4: mp4.value, c6: mp6.value, c10: mp10.value };
+    
+    // Obter taxas de concorrência (modo manual ou calculado)
+    let isManual = document.querySelector('input[name="modoOutras"]:checked').value === "manual";
+    let outs = {};
+    if(isManual){
+        outs = {
+            pix: parseFloat(out_pix_manual.value) || 0,
+            deb: parseFloat(out_debito_manual.value) || 0,
+            c1: parseFloat(out1_manual.value) || 0,
+            c2: parseFloat(document.getElementById("out2_manual").value) || 0,
+            c4: parseFloat(document.getElementById("out4_manual").value) || 0,
+            c6: parseFloat(document.getElementById("out6_manual").value) || 0,
+            c10: parseFloat(document.getElementById("out10_manual").value) || 0
+        };
+    } else {
+        // Cálculo baseado em MDR+Antecipação (lógica simplificada para a simulação de faturamento)
+        let mdrA = parseFloat(mdr1.value) || 0;
+        let mdrB = parseFloat(mdr2.value) || 0;
+        let ant = parseFloat(antecipacao.value) || 0;
+        outs = {
+            pix: parseFloat(out_pix.value) || 0,
+            deb: parseFloat(out_debito.value) || 0,
+            c1: parseFloat(out1.value) || 0,
+            c2: mdrA + ant,
+            c4: mdrA + (ant*3),
+            c6: mdrA + (ant*5),
+            c10: mdrB + (ant*9)
+        };
     }
 
-    // Cálculo simplificado de economia de taxas baseado no share
-    let mps = { pix: mp_pix.value, deb: mp_debito.value, c1: mp1.value, c2: mp2.value, c4: mp4.value, c6: mp6.value, c10: mp10.value };
-    let outs = { 
-        pix: out_pix_manual.value || out_pix.value, 
-        deb: out_debito_manual.value || out_debito.value, 
-        c1: out1_manual.value || out1.value,
-        c2: document.getElementById("out2_manual").value || (parseFloat(mdr1.value) + parseFloat(antecipacao.value)),
-        c4: document.getElementById("out4_manual").value || (parseFloat(mdr1.value) + (parseFloat(antecipacao.value)*3)),
-        c6: document.getElementById("out6_manual").value || (parseFloat(mdr1.value) + (parseFloat(antecipacao.value)*5)),
-        c10: document.getElementById("out10_manual").value || (parseFloat(mdr2.value) + (parseFloat(antecipacao.value)*9))
-    };
-
-    let economiaTaxas = (fat * (s_pix/100) * ((outs.pix - mps.pix)/100)) +
-                        (fat * (s_deb/100) * ((outs.deb - mps.deb)/100)) +
-                        (fat * (s_1/100) * ((outs.c1 - mps.c1)/100)) +
-                        (fat * (s_2/100) * ((outs.c2 - mps.c2)/100)) +
-                        (fat * (s_4/100) * ((outs.c4 - mps.c4)/100)) +
-                        (fat * (s_6/100) * ((outs.c6 - mps.c6)/100)) +
-                        (fat * (s_10/100) * ((outs.c10 - mps.c10)/100));
+    // Calcular economia de taxas baseada no share
+    let economiaTaxas = (fat * (share_pix.value/100) * ((outs.pix - mps.pix)/100)) +
+                        (fat * (share_debito.value/100) * ((outs.deb - mps.deb)/100)) +
+                        (fat * (share_1x.value/100) * ((outs.c1 - mps.c1)/100)) +
+                        (fat * (share_2x.value/100) * ((outs.c2 - mps.c2)/100)) +
+                        (fat * (share_4x.value/100) * ((outs.c4 - mps.c4)/100)) +
+                        (fat * (share_6x.value/100) * ((outs.c6 - mps.c6)/100)) +
+                        (fat * (share_10x.value/100) * ((outs.c10 - mps.c10)/100));
 
     let custoFixo = parseFloat(document.getElementById("custos_fixos_total").value) || 0;
     let economiaMensal = economiaTaxas + custoFixo;
     let econAnual = economiaMensal * 12;
 
-    // Lógica Cofrinho MP
+    // Lógica Cofrinho MP (Rendimento Fatiado)
     let reserva = parseFloat(document.getElementById("cofrinho_reserva").value) || 0;
     let cdiBase = parseFloat(document.getElementById("cofrinho_percentual").value) || 10.75;
     let saldo = 0, rendBrutoTotal = 0, rendBruto1ano = 0;
@@ -206,27 +218,65 @@ function exportar() {
     });
 }
 
-// Funções OCR unificadas
+// Funções de Processamento OCR
 async function processarOCRMP(event) { processarOCRGeneric(event, "mp"); }
 async function processarOCRConc(event) { processarOCRGeneric(event, "out"); }
 
 async function processarOCRGeneric(event, prefixo) {
     const file = event.target.files[0];
     if (!file) return;
-    alert("Processando imagem...");
-    const result = await Tesseract.recognize(file, 'eng');
-    let texto = result.data.text.replace(/\n/g, " ").replace(/,/g, ".");
-    let regex = /(\d{1,2})\s*[xX]\s*([\d\.]+)/g;
+
+    // Limpa os campos antigos antes de preencher
+    document.querySelectorAll(`input[id^="${prefixo}"]`).forEach(input => input.value = "");
+
+    alert("Processando imagem com OCR... Aguarde a leitura finalizar.");
+    
+    // Tesseract processa a imagem (idioma português para ajudar com 'débito', 'crédito')
+    const result = await Tesseract.recognize(file, 'por+eng');
+    
+    // Normalização agressiva do texto para facilitar a Regex
+    // Remove quebras de linha, troca vírgulas por pontos, remove espaços duplos
+    let textoData = result.data.text.toLowerCase()
+                    .replace(/\n/g, " ")
+                    .replace(/,/g, ".")
+                    .replace(/\s{2,}/g, ' ')
+                    .replace(/[^\d.x%/ \ta-zà-ú]/g, ''); // Mantém apenas números, pontos, x, %, espaços e letras básicas
+    
+    console.log("TEXTO OCR LIMPO:", textoData);
+
+    // Regex flexível: (número)x (número opcional opcional) (pontos ou números)
+    // Captura "1x 2.50", "2x - 3,99", "3x3.50", "1 x 1.99%" etc.
+    let regex = /(\d{1,2})\s*x\s*[-–s]*\s*([\d.]+)/g;
     let match;
-    while ((match = regex.exec(texto)) !== null) {
-        let p = parseInt(match[1]);
-        let t = parseFloat(match[2]);
-        if (p >= 1 && p <= 21) {
-            let id = (p === 1) ? (prefixo === "mp" ? "mp1" : "out1_manual") : (prefixo + p + (prefixo === "out" ? "_manual" : ""));
+    let encontrados = false;
+
+    while ((match = regex.exec(textoData)) !== null) {
+        let p = parseInt(match[1]); // Parcela
+        let t = parseFloat(match[2]); // Taxa
+
+        if (p >= 1 && p <= 21 && !isNaN(t)) {
+            encontrados = true;
+            let id = "";
+            if(prefixo === "mp") {
+                id = (p === 1) ? "mp1" : "mp" + p;
+            } else {
+                id = (p === 1) ? "out1_manual" : "out" + p + "_manual";
+            }
+
             let campo = document.getElementById(id);
-            if (campo) campo.value = t;
+            if (campo) campo.value = t.toFixed(2);
         }
     }
-    if (prefixo === "out") { document.querySelector('input[value="manual"]').checked = true; trocarModoOutras(); }
-    alert("Taxas processadas!");
+
+    if (!encontrados) {
+        alert("Não consegui identificar taxas no formato '(número)x (número)' nesta imagem. Tente tirar uma foto mais nítida ou preencha manualmente.");
+    } else {
+        alert("OCR finalizado. Alguns campos foram preenchidos!");
+    }
+
+    // Se for concorrência, ativa o modo manual
+    if (prefixo === "out") { 
+        document.querySelector('input[value="manual"]').checked = true; 
+        trocarModoOutras(); 
+    }
 }
