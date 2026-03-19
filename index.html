@@ -29,6 +29,21 @@
         .barraContainer{ width:100%; height:22px; background:#f0f0f0; border-radius:12px; overflow:hidden; margin-bottom:20px; }
         .barraProgresso{ height:100%; width:0%; background:#FFE600; transition:width 0.3s; }
         .info-data { font-size: 10px; color: #999; text-align: right; margin-top: 5px; }
+        
+        /* Estilo para os botões de upload que parecem botões normais */
+        .btn-upload {
+            background-color: #f4f4f4;
+            color: #333;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 6px;
+            display: inline-block;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -49,8 +64,11 @@
         <label>Débito (%)</label> <input id="mp_debito" type="number" step="0.01">
         <label>Crédito 1x (%)</label> <input id="mp1" type="number" step="0.01">
         
-        <h4>Importar taxas por imagem</h4>
-        <input type="file" id="uploadOCR">
+        <h4>Importar taxas por foto</h4>
+        <label class="btn-upload">
+            <input type="file" id="uploadOCR" accept="image/*" capture="camera" style="display:none">
+            📷 Abrir Câmera ou Galeria
+        </label>
         <div id="mpParcelas"></div>
     </div>
 
@@ -75,8 +93,11 @@
             <label>Pix (%)</label> <input id="out_pix_manual" type="number" step="0.01">
             <label>Débito (%)</label> <input id="out_debito_manual" type="number" step="0.01">
             <label>Crédito 1x (%)</label> <input id="out1_manual" type="number" step="0.01">
-            <h4>Importar taxas por imagem</h4>
-            <input type="file" id="uploadOCRConc">
+            <h4>Importar taxas por foto</h4>
+            <label class="btn-upload">
+                <input type="file" id="uploadOCRConc" accept="image/*" capture="camera" style="display:none">
+                📷 Abrir Câmera ou Galeria
+            </label>
             <div id="outrasParcelas"></div>
         </div>
     </div>
