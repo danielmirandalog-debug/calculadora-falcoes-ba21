@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="pt-BR">
 
 <head>
@@ -7,132 +6,316 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Calculadora de Taxas Falcões da BA21</title>
-
-<link rel="icon" href="icon.svg">
-
-<link rel="manifest" href="manifest.json">
-
-<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<title>Calculadora de taxas e lucros</title>
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script src="app.js" defer></script>
 
 <style>
 
 body{
-font-family:Arial;
-background:#f2f2f2;
-padding:20px;
+font-family:Segoe UI,Arial;
+background:#FFFDE7;
+margin:0;
 }
 
-h1{
+header{
+background:#FFE600;
+color:#333;
+padding:15px;
 text-align:center;
+font-size:22px;
+font-weight:bold;
 }
 
 .container{
+max-width:900px;
+margin:auto;
+padding:20px;
+}
+
+.card{
 background:white;
 padding:20px;
+margin-bottom:20px;
 border-radius:10px;
-max-width:700px;
-margin:auto;
+box-shadow:0 4px 10px rgba(0,0,0,0.08);
+border-top:4px solid #FFE600;
 }
 
 input{
 width:100%;
 padding:8px;
 margin-bottom:10px;
+border:1px solid #ddd;
+border-radius:5px;
+}
+
+input:focus{
+outline:none;
+border-color:#3483FA;
+box-shadow:0 0 0 2px rgba(52,131,250,0.15);
 }
 
 button{
 width:100%;
 padding:12px;
 margin-top:10px;
-background:#111;
-color:white;
 border:none;
-border-radius:5px;
+border-radius:6px;
+background:#FFE600;
+color:#333;
+font-weight:bold;
 cursor:pointer;
+transition:0.2s;
+}
+
+button:hover{
+background:#ffd400;
 }
 
 table{
 width:100%;
 border-collapse:collapse;
-margin-top:20px;
+font-size:11px;
 }
 
 td,th{
-border:1px solid #ccc;
-padding:8px;
+border:1px solid #eee;
+padding:4px;
 text-align:center;
 }
 
-.mp{
-background:#ffe066;
-}
-
-.outras{
-background:#111;
-color:white;
+th{
+background:#FFF3A0;
 }
 
 .taxaRuim{
-color:red;
+color:#E53935;
 font-weight:bold;
 }
 
-</style>
+.radioLinha{
+display:flex;
+gap:20px;
+margin-bottom:15px;
+}
 
+.tituloFat{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:10px;
+}
+
+.contador{
+font-weight:bold;
+font-size:18px;
+color:#3483FA;
+}
+
+.barraContainer{
+width:100%;
+height:22px;
+background:#f0f0f0;
+border-radius:12px;
+overflow:hidden;
+margin-bottom:20px;
+}
+
+.barraProgresso{
+height:100%;
+width:0%;
+background:#FFE600;
+transition:width 0.3s;
+}
+
+</style>
 </head>
 
 <body>
 
-<h1>🦅 CALCULADORA DE TAXAS FALCÕES DA BA21</h1>
+<header>
+Calculadora de taxas e lucros Falcões da BA21
+</header>
 
 <div class="container">
 
-<label>Valor da venda</label> <input id="valor" type="number">
+<div class="card">
 
-<h3>Importar taxas Mercado Pago</h3>
-
-<input type="file" id="uploadOCR">
-
-<button onclick="lerOCR()">LER PRINT MERCADO PAGO</button>
-
-<h3>Mercado Pago</h3>
-
-<label>Pix %</label> <input id="mp_pix">
-
-<label>Débito %</label> <input id="mp_debito">
-
-<label>1x %</label> <input id="mp1">
-
-<div id="mpParcelas"></div>
-
-<h3>Outras adquirências</h3>
-
-<label>Pix %</label> <input id="out_pix">
-
-<label>Débito %</label> <input id="out_debito">
-
-<label>1x %</label> <input id="out1">
-
-<label>MDR 2-6x</label> <input id="mdr1">
-
-<label>MDR 7-12x</label> <input id="mdr2">
-
-<label>MDR 13-21x</label> <input id="mdr3">
-
-<label>Taxa antecipação mensal %</label> <input id="antecipacao">
-
-<button onclick="simular()">SIMULAR</button>
-
-<button onclick="exportar()">EXPORTAR PNG</button>
+<label>Valor da venda</label>
+<input id="valor" type="number">
 
 </div>
 
+<div class="card">
+
+<h3>Mercado Pago</h3>
+
+<label>Pix (%)</label>
+<input id="mp_pix">
+
+<label>Débito (%)</label>
+<input id="mp_debito">
+
+<label>Crédito 1x (%)</label>
+<input id="mp1">
+
+<h4>Importar taxas por imagem</h4>
+<input type="file" id="uploadOCR">
+
+<div id="mpParcelas"></div>
+
+</div>
+
+<div class="card">
+
+<h3>Concorrência</h3>
+
+<div class="radioLinha">
+
+<label>
+<input type="radio" name="modoOutras" value="mdr" checked onchange="trocarModoOutras()">
+Preencher com MDR e Antecipação
+</label>
+
+<label>
+<input type="radio" name="modoOutras" value="manual" onchange="trocarModoOutras()">
+Preencher manualmente
+</label>
+
+</div>
+
+<div id="modoMDR">
+
+<label>Pix (%)</label>
+<input id="out_pix">
+
+<label>Débito (%)</label>
+<input id="out_debito">
+
+<label>Crédito 1x (%)</label>
+<input id="out1">
+
+<label>MDR 2-6x</label>
+<input id="mdr1">
+
+<label>MDR 7-12x</label>
+<input id="mdr2">
+
+<label>MDR 13-21x</label>
+<input id="mdr3">
+
+<label>Antecipação mensal (%)</label>
+<input id="antecipacao">
+
+</div>
+
+<div id="modoManual" style="display:none">
+
+<label>Pix (%)</label>
+<input id="out_pix_manual">
+
+<label>Débito (%)</label>
+<input id="out_debito_manual">
+
+<label>Crédito 1x (%)</label>
+<input id="out1_manual">
+
+<h4>Importar taxas por imagem</h4>
+<input type="file" id="uploadOCRConc">
+
+<div id="outrasParcelas"></div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<button onclick="simular()">SIMULAR TAXAS</button>
+
 <div id="resultado"></div>
+
+</div>
+
+<div class="card">
+
+<button onclick="exportar()">EXPORTAR RELATÓRIO</button>
+
+</div>
+
+<div class="card">
+
+<div class="tituloFat">
+
+<h3>Simulação de faturamento</h3>
+
+<div class="contador" id="contador">0%</div>
+
+</div>
+
+<div class="barraContainer">
+<div class="barraProgresso" id="barra"></div>
+</div>
+
+<label>Faturamento mensal</label>
+<input id="faturamento">
+
+<label>Pix (%)</label>
+<input id="share_pix" oninput="atualizarBarra()">
+
+<label>Débito (%)</label>
+<input id="share_debito" oninput="atualizarBarra()">
+
+<label>Crédito à vista (%)</label>
+<input id="share_1x" oninput="atualizarBarra()">
+
+<label>Crédito 2x (%)</label>
+<input id="share_2x" oninput="atualizarBarra()">
+
+<label>Crédito 4x (%)</label>
+<input id="share_4x" oninput="atualizarBarra()">
+
+<label>Crédito 6x (%)</label>
+<input id="share_6x" oninput="atualizarBarra()">
+
+<label>Crédito 10x (%)</label>
+<input id="share_10x" oninput="atualizarBarra()">
+
+<h3>CUSTOS DA CONCORRÊNCIA</h3>
+
+<label>Sistema (mensal)</label>
+<input id="custo_sistema" type="number">
+
+<label>Aluguel de máquina (mensal)</label>
+<input id="custo_maquina" type="number">
+
+<label>Cesta de serviços do banco</label>
+<input id="custo_cesta" type="number">
+
+<label>Taxa de manutenção da conta</label>
+<input id="custo_manutencao" type="number">
+
+<h3>COFRINHO MERCADO PAGO</h3>
+
+<label>Reserva mensal (R$)</label>
+<input id="cofrinho_reserva" type="number">
+
+<label>Rendimento %</label>
+<input id="cofrinho_percentual" type="number">
+
+<button onclick="simularFaturamento()">SIMULAR FATURAMENTO</button>
+
+<div id="resultadoFaturamento"></div>
+<canvas id="graficoEconomia" style="margin-top:20px"></canvas>
+
+</div>
+
+</div>
 
 </body>
 </html>
