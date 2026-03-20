@@ -32,13 +32,14 @@
         .taxaRuim { color: #d32f2f; font-weight: bold; }
         .resumo-financeiro { background:#e3f2fd; padding:15px; border-radius:8px; margin-top:15px; border-left: 5px solid #2196f3; font-size: 14px; line-height: 1.6; }
         .check-linha { display: flex; align-items: center; justify-content: flex-start; gap: 8px; margin: 10px 0; background: #fffde7; padding: 12px; border-radius: 8px; border: 1px dashed #ffd600; }
-        .check-linha input { width: 18px; height: 18px; margin: 0; }
+        .check-linha input { width: 18px; height: 18px; margin: 0; cursor: pointer; }
         .check-linha label { margin: 0; cursor: pointer; font-size: 13px; color: #333; display: inline; }
 
-        #areaRelatorio { position: absolute; left: -9999px; width: 700px; background: white; padding: 40px; }
+        /* Estilos Relatório (Oculto na tela) */
+        #areaRelatorio { position: absolute; left: -9999px; width: 700px; background: white; padding: 40px; color: #333; }
         .header-rel { text-align: center; border-bottom: 4px solid #FFE600; padding-bottom: 20px; margin-bottom: 25px; }
         .info-cli-rel { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; font-size: 15px; background: #fcfcfc; padding: 20px; border-radius: 10px; border: 1px solid #eee; }
-        .nota-faloes { font-size: 12px; color: #555; margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px; }
+        .nota-faloes { font-size: 12px; color: #555; margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px; text-align: justify; display: block !important; }
     </style>
 </head>
 <body>
@@ -49,15 +50,15 @@
     <div class="card">
         <h3>Atendimento <button type="button" class="btn-limpar" onclick="location.reload()">Resetar</button></h3>
         <div class="grid-taxas">
-            <span><label>Empresa</label><input id="input_loja" type="text"></span>
-            <span><label>Cliente</label><input id="input_cliente" type="text"></span>
+            <span><label>Empresa</label><input id="input_loja" type="text" placeholder="Ex: Padaria Central"></span>
+            <span><label>Cliente</label><input id="input_cliente" type="text" placeholder="Ex: João Silva"></span>
         </div>
         <span><label>Data</label><input id="input_data" type="text" readonly style="background:#f5f5f5"></span>
     </div>
 
     <div class="card">
         <label>Valor da Venda para Comparação (R$)</label>
-        <input id="valor" type="number" step="0.01">
+        <input id="valor" type="number" step="0.01" placeholder="0.00">
     </div>
 
     <div class="card">
@@ -83,14 +84,14 @@
         
         <div id="modoMDR">
             <div class="grid-taxas">
-                <span><label>Pix (%)</label> <input id="out_pix" type="number" step="0.01"></span>
-                <span><label>Débito (%)</label> <input id="out_debito" type="number" step="0.01"></span>
-                <span><label>Crédito 1x (%)</label> <input id="out1" type="number" step="0.01"></span>
-                <span><label>MDR 2-6x (%)</label> <input id="mdr1" type="number" step="0.01"></span>
-                <span><label>MDR 7-12x (%)</label> <input id="mdr2" type="number" step="0.01"></span>
-                <span><label>MDR 13-18x (%)</label> <input id="mdr3" type="number" step="0.01"></span>
+                <span><label>Pix (%)</label> <input id="out_pix" type="number" step="0.01" placeholder="0.00"></span>
+                <span><label>Débito (%)</label> <input id="out_debito" type="number" step="0.01" placeholder="0.00"></span>
+                <span><label>Crédito 1x (%)</label> <input id="out1" type="number" step="0.01" placeholder="0.00"></span>
+                <span><label>MDR 2-6x (%)</label> <input id="mdr1" type="number" step="0.01" placeholder="0.00"></span>
+                <span><label>MDR 7-12x (%)</label> <input id="mdr2" type="number" step="0.01" placeholder="0.00"></span>
+                <span><label>MDR 13-18x (%)</label> <input id="mdr3" type="number" step="0.01" placeholder="0.00"></span>
             </div>
-            <label>Antecipação Mensal (%)</label> <input id="antecipacao" type="number" step="0.01">
+            <label>Antecipação Mensal (%)</label> <input id="antecipacao" type="number" step="0.01" placeholder="0.00">
         </div>
 
         <div id="modoManual" style="display:none">
@@ -118,23 +119,23 @@
         <div class="barraContainer"><div class="barraProgresso" id="barra"></div></div>
         <div style="text-align:right; font-weight:bold; font-size:12px;">Total: <span id="contador">0%</span> (Meta 100%)</div>
         
-        <label>Faturamento Mensal (R$)</label>
-        <input id="faturamento" type="number" step="0.01">
+        <label>Faturamento Mensal Estimado (R$)</label>
+        <input id="faturamento" type="number" step="0.01" placeholder="0.00">
         
         <div class="grid-taxas">
-            <span>Pix %: <input id="share_pix" oninput="atualizarBarra()" type="number"></span>
-            <span>Débito %: <input id="share_debito" oninput="atualizarBarra()" type="number"></span>
-            <span>1x %: <input id="share_1x" oninput="atualizarBarra()" type="number"></span>
-            <span>2x-6x %: <input id="share_2x" oninput="atualizarBarra()" type="number"></span>
-            <span>7x-12x %: <input id="share_7x" oninput="atualizarBarra()" type="number"></span>
+            <span>Pix %: <input id="share_pix" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>Débito %: <input id="share_debito" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>1x %: <input id="share_1x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>2x-6x %: <input id="share_2x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>7x-12x %: <input id="share_7x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
         </div>
 
         <h3 style="margin-top:20px;">Custos Fixos Concorrência <button type="button" class="btn-limpar" onclick="limparSecao('fixos')">Limpar</button></h3>
         <div class="grid-taxas">
-            <span><label>Mensalidade Sistema (R$)</label><input id="fixo_sistema" type="number"></span>
-            <span><label>Aluguel Máquina (R$)</label><input id="fixo_maquina" type="number"></span>
-            <span><label>Cesta de Serviços (R$)</label><input id="fixo_cesta" type="number"></span>
-            <span><label>Manutenção Conta (R$)</label><input id="fixo_manutencao" type="number"></span>
+            <span><label>Mensalidade Sistema (R$)</label><input id="fixo_sistema" type="number" placeholder="0.00"></span>
+            <span><label>Aluguel Máquina (R$)</label><input id="fixo_maquina" type="number" placeholder="0.00"></span>
+            <span><label>Cesta de Serviços (R$)</label><input id="fixo_cesta" type="number" placeholder="0.00"></span>
+            <span><label>Manutenção Conta (R$)</label><input id="fixo_manutencao" type="number" placeholder="0.00"></span>
         </div>
         
         <div class="check-linha">
@@ -144,13 +145,13 @@
 
         <h3 style="margin-top:20px;">Cofrinho <button type="button" class="btn-limpar" onclick="limparSecao('cofrinho')">Limpar</button></h3>
         <div class="grid-taxas">
-            <span><label>Aporte Mensal (R$)</label><input id="cofrinho_reserva" type="number"></span>
+            <span><label>Aporte Mensal (R$)</label><input id="cofrinho_reserva" type="number" placeholder="0.00"></span>
             <span><label>% CDI Alvo (105-140)</label><input id="cofrinho_cdi_alvo" type="number" value="105"></span>
         </div>
 
         <button onclick="simularFaturamento()" style="background:#3483FA; color:white;">CALCULAR PROJEÇÃO COMPLETA</button>
         <div id="resultadoFaturamento"></div>
-        <canvas id="graficoEconomia" style="margin-top:20px;"></canvas>
+        <canvas id="graficoEconomia" style="margin-top:20px; max-height: 300px;"></canvas>
     </div>
 
     <div class="card">
@@ -160,8 +161,8 @@
 
 <div id="areaRelatorio">
     <div class="header-rel">
-        <h1>Falcões da BA21</h1>
-        <p>Proposta Estratégica Mercado Pago</p>
+        <h1 style="margin:0;">Falcões da BA21</h1>
+        <p style="margin:5px 0;">Consultoria e Estratégia Financeira</p>
     </div>
     <div class="info-cli-rel">
         <div><b>Loja:</b> <span id="rel_loja"></span></div>
@@ -172,12 +173,12 @@
         <div id="rel_tabela_taxas"></div>
         <div id="rel_share_cofrinho" style="margin-top:20px;"></div>
         <div id="rel_grafico_box" style="text-align:center; margin-top:20px;">
-            <img id="img_grafico" style="max-width:100%; border-radius:10px;">
+            <img id="img_grafico" style="max-width:100%; border:1px solid #eee; border-radius:10px;">
         </div>
     </div>
     <div class="nota-faloes">
-        <p><b>Notas do Cofrinho:</b> Até R$ 10.000,00 rende o % CDI Alvo. Entre R$ 10.000,01 e R$ 100.000,00 rende 100% do CDI. Acima de R$ 100.000,00 não há rendimento extra.</p>
-        <p><b>AVISO:</b> Projeção baseada nos dados fornecidos. Sujeito a alteração de taxas vigentes.</p>
+        <p><b>Sobre o Cofrinho:</b> Valores até R$ 10.000,00 rendem o percentual alvo selecionado. Entre R$ 10.000,01 e R$ 100.000,00 o rendimento é de 100% do CDI. Acima de R$ 100.000,00 o valor não possui rendimento adicional.</p>
+        <p><b>AVISO LEGAL:</b> Os cálculos são estimativas baseadas nos dados informados pelo cliente. Taxas podem sofrer alterações conforme política comercial vigente.</p>
     </div>
 </div>
 
