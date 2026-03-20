@@ -12,13 +12,14 @@
 
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #FFFDE7; margin: 0; color: #333; }
-        header { background: #FFE600; color: #333; padding: 20px; text-align: center; font-size: 22px; font-weight: bold; }
+        header { background: #FFE600; color: #333; padding: 20px; text-align: center; font-size: 22px; font-weight: bold; border-bottom: 3px solid #333; }
         .container { max-width: 800px; margin: auto; padding: 15px; }
         .card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 5px solid #FFE600; }
         h3 { margin-top: 0; display: flex; justify-content: space-between; align-items: center; font-size: 17px; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
         label { font-size: 12px; font-weight: bold; color: #666; display: block; margin-bottom: 3px; }
-        input[type="number"] { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
-        button { width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 8px; background: #FFE600; color: #333; font-weight: bold; cursor: pointer; font-size: 16px; }
+        input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
+        button { width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 8px; background: #FFE600; color: #333; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.2s; }
+        button:active { transform: scale(0.98); }
         .btn-limpar { width: auto; padding: 5px 10px; font-size: 10px; background: #f5f5f5; color: #d32f2f; border: 1px solid #ddd; margin: 0; }
         .grid-taxas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .upload-group { display: flex; gap: 8px; margin: 10px 0; }
@@ -31,19 +32,35 @@
         th { background: #FFF9C4; }
         .taxaRuim { color: #d32f2f; font-weight: bold; }
         .resumo-financeiro { background:#e3f2fd; padding:15px; border-radius:8px; margin-top:15px; border-left: 5px solid #2196f3; font-size: 14px; line-height: 1.6; }
-        .check-linha { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; background: #fffde7; padding: 8px; border-radius: 8px; border: 1px dashed #ffd600; }
+        .check-linha { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; background: #fffde7; padding: 10px; border-radius: 8px; border: 1px dashed #ffd600; }
         .check-linha input { width: auto; margin: 0; }
-        .nota-rodape { font-size: 11px; color: #777; font-style: italic; margin-top: 15px; line-height: 1.4; border-top: 1px solid #ddd; padding-top: 10px; display: none; }
+
+        /* Estilos do Relatório Oculto */
+        #areaRelatorio { 
+            position: absolute; left: -9999px; width: 650px; background: white; padding: 40px; 
+        }
+        .header-rel { text-align: center; border-bottom: 3px solid #FFE600; padding-bottom: 20px; margin-bottom: 20px; }
+        .info-cli-rel { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; font-size: 14px; background: #f9f9f9; padding: 15px; border-radius: 8px; }
+        .nota-faloes { font-size: 11px; color: #555; margin-top: 25px; border-top: 1px solid #eee; padding-top: 15px; font-style: italic; }
     </style>
 </head>
 <body>
 
 <header>Falcões da BA21 - Simulador Premium</header>
 
-<div class="container" id="conteudoParaExportar">
+<div class="container">
     
     <div class="card">
-        <label>Valor da Venda para Simulação (R$)</label>
+        <h3>Identificação do Cliente</h3>
+        <div class="grid-taxas">
+            <span><label>Nome da Empresa</label><input id="input_loja" type="text" placeholder="Nome da Loja"></span>
+            <span><label>Nome do Cliente</label><input id="input_cliente" type="text" placeholder="Responsável"></span>
+        </div>
+        <span><label>Data</label><input id="input_data" type="text" readonly></span>
+    </div>
+
+    <div class="card">
+        <label>Valor da Venda para Simulação Individual (R$)</label>
         <input id="valor" type="number" placeholder="0.00" step="0.01">
     </div>
 
@@ -54,10 +71,6 @@
             <span><label>Débito (%)</label> <input id="mp_debito" type="number" step="0.01" value="0.99"></span>
             <span><label>Crédito 1x (%)</label> <input id="mp1" type="number" step="0.01" value="3.05"></span>
         </div>
-        <div class="upload-group">
-            <label class="btn-upload-manual"><input type="file" capture="camera" style="display:none" onchange="processarOCRMP(event)">📷 Foto</label>
-            <label class="btn-upload-manual"><input type="file" style="display:none" onchange="processarOCRMP(event)">📁 Galeria</label>
-        </div>
         <div id="mpParcelas" class="grid-taxas"></div>
     </div>
 
@@ -65,7 +78,7 @@
         <h3>Concorrência <button type="button" class="btn-limpar" onclick="limparSecao('out')">Limpar</button></h3>
         <div class="radioLinha">
             <label><input type="radio" name="modoOutras" value="mdr" checked onchange="trocarModoOutras()"> MDR + Ant.</label>
-            <label><input type="radio" name="modoOutras" value="manual" onchange="trocarModoOutras()"> Manual / Foto</label>
+            <label><input type="radio" name="modoOutras" value="manual" onchange="trocarModoOutras()"> Manual</label>
         </div>
         <div id="modoMDR">
             <div class="grid-taxas">
@@ -79,28 +92,19 @@
             <label>Antecipação Mensal (%)</label> <input id="antecipacao" type="number" step="0.01">
         </div>
         <div id="modoManual" style="display:none">
-            <div class="grid-taxas">
-                <span><label>Pix (%)</label> <input id="out_pix_manual" type="number" step="0.01"></span>
-                <span><label>Débito (%)</label> <input id="out_debito_manual" type="number" step="0.01"></span>
-                <span><label>Crédito 1x (%)</label> <input id="out1_manual" type="number" step="0.01"></span>
-            </div>
-            <div class="upload-group">
-                <label class="btn-upload-manual"><input type="file" capture="camera" style="display:none" onchange="processarOCRConc(event)">📷 Foto</label>
-                <label class="btn-upload-manual"><input type="file" style="display:none" onchange="processarOCRConc(event)">📁 Galeria</label>
-            </div>
-            <div id="outrasParcelas" class="grid-taxas"></div>
+            <div class="grid-taxas" id="outrasParcelas"></div>
         </div>
     </div>
 
     <div class="card">
-        <button onclick="simular()">COMPARAR TAXAS AGORA</button>
+        <button onclick="simular()">COMPARAR TAXAS</button>
         <div id="resultado"></div>
     </div>
 
     <div class="card">
         <h3>Faturamento e Share <button type="button" class="btn-limpar" onclick="limparSecao('share')">Limpar</button></h3>
         <div class="barraContainer"><div class="barraProgresso" id="barra"></div></div>
-        <div style="text-align:right; margin-bottom:10px; font-weight:bold;">Share Total: <span id="contador">0%</span></div>
+        <div style="text-align:right; font-weight:bold; font-size:12px;">Share Total: <span id="contador">0%</span></div>
         <label>Faturamento Mensal (R$)</label>
         <input id="faturamento" type="number" placeholder="0.00">
         <div class="grid-taxas">
@@ -115,10 +119,10 @@
 
         <h3 style="margin-top:20px;">Custos Fixos Concorrência <button type="button" class="btn-limpar" onclick="limparSecao('fixos')">Limpar</button></h3>
         <div class="grid-taxas">
-            <span><label>Mensalidade Sistema (R$)</label><input id="fixo_sistema" type="number" placeholder="0.00"></span>
-            <span><label>Aluguel Máquina (R$)</label><input id="fixo_maquina" type="number" placeholder="0.00"></span>
-            <span><label>Manutenção Conta (R$)</label><input id="fixo_manutencao" type="number" placeholder="0.00"></span>
-            <span><label>Cesta de Serviços (R$)</label><input id="fixo_cesta" type="number" placeholder="0.00"></span>
+            <span><label>Mensalidade Sistema (R$)</label><input id="fixo_sistema" type="number"></span>
+            <span><label>Aluguel Máquina (R$)</label><input id="fixo_maquina" type="number"></span>
+            <span><label>Manutenção Conta (R$)</label><input id="fixo_manutencao" type="number"></span>
+            <span><label>Cesta de Serviços (R$)</label><input id="fixo_cesta" type="number"></span>
         </div>
         
         <div class="check-linha">
@@ -128,26 +132,43 @@
 
         <h3 style="margin-top:20px;">Cofrinho <button type="button" class="btn-limpar" onclick="limparSecao('cofrinho')">Limpar</button></h3>
         <div class="grid-taxas">
-            <span><label>Investimento Mensal (R$)</label><input id="cofrinho_reserva" type="number" placeholder="Ex: 500.00"></span>
+            <span><label>Investimento Mensal (R$)</label><input id="cofrinho_reserva" type="number"></span>
             <span><label>% do CDI (105 a 140%)</label><input id="cofrinho_cdi_alvo" type="number" value="105"></span>
         </div>
-        <label>Selic Atual (% ao ano - Referência)</label>
-        <input id="cofrinho_percentual" type="number" step="0.01" readonly style="background: #f0f0f0;">
 
-        <button onclick="simularFaturamento()" style="background:#3483FA; color:white;">CALCULAR RESULTADOS FINAIS</button>
+        <button onclick="simularFaturamento()" style="background:#3483FA; color:white;">CALCULAR PROJEÇÃO FINAL</button>
         <div id="resultadoFaturamento"></div>
-        <canvas id="graficoEconomia" style="margin-top:20px"></canvas>
-        
-        <div id="notaInformativa" class="nota-rodape">
-            * O rendimento do Cofrinho Mercado Pago é baseado no CDI. 
-            Valores até R$ 10.000,00 rendem o percentual selecionado (ex: 105% do CDI). 
-            De R$ 10.000,01 até R$ 100.000,00 o rendimento é de 100% do CDI. 
-            Valores que excedem R$ 100.000,00 não possuem rendimento nesta modalidade.
-        </div>
+        <canvas id="graficoEconomia" style="margin-top:20px;"></canvas>
     </div>
 
     <div class="card">
-        <button onclick="exportar()" style="background: #222; color: white;">SALVAR RELATÓRIO EM IMAGEM</button>
+        <button onclick="exportarRelatorio()" style="background: #222; color: white;">GERAR RELATÓRIO PARA WHATSAPP</button>
+    </div>
+</div>
+
+<div id="areaRelatorio">
+    <div class="header-rel">
+        <h1 style="margin:0;">Falcões da BA21</h1>
+        <p style="margin:5px 0;">Relatório de Simulação Financeira</p>
+    </div>
+    
+    <div class="info-cli-rel">
+        <div><b>Empresa:</b> <span id="rel_loja"></span></div>
+        <div><b>Data:</b> <span id="rel_data"></span></div>
+        <div><b>Cliente:</b> <span id="rel_cliente"></span></div>
+    </div>
+
+    <div id="rel_tabela_taxas"></div>
+    <div id="rel_share_cofrinho" style="margin-top:20px;"></div>
+    
+    <div style="text-align:center; margin-top:20px;">
+        <h3 style="border:none;">Projeção de Economia e Investimento</h3>
+        <img id="img_grafico" style="max-width:100%; border:1px solid #ddd; border-radius:10px;">
+    </div>
+
+    <div class="nota-faloes">
+        <b>Notas do Cofrinho:</b> Rendimento baseado no CDI. Até R$ 10.000,00 rende o percentual selecionado. De R$ 10.000,01 até R$ 100.000,00 rende 100% do CDI. Acima de R$ 100.000,00 não há rendimento adicional nesta modalidade.<br><br>
+        <b>AVISO:</b> O cenário de cálculos desta simulação podem sofrer alteração sem aviso prévio. Consulte o Executivo para maiores informações.
     </div>
 </div>
 
