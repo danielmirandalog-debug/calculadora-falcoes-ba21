@@ -35,11 +35,11 @@
         .check-linha input { width: 18px; height: 18px; margin: 0; cursor: pointer; }
         .check-linha label { margin: 0; cursor: pointer; font-size: 13px; color: #333; display: inline; }
 
-        /* Estilos Relatório (Oculto na tela) */
+        /* Relatório Oculto */
         #areaRelatorio { position: absolute; left: -9999px; width: 700px; background: white; padding: 40px; color: #333; }
         .header-rel { text-align: center; border-bottom: 4px solid #FFE600; padding-bottom: 20px; margin-bottom: 25px; }
         .info-cli-rel { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; font-size: 15px; background: #fcfcfc; padding: 20px; border-radius: 10px; border: 1px solid #eee; }
-        .nota-faloes { font-size: 12px; color: #555; margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px; text-align: justify; display: block !important; }
+        .nota-faloes { font-size: 12px; color: #555; margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px; text-align: justify; }
     </style>
 </head>
 <body>
@@ -126,8 +126,11 @@
             <span>Pix %: <input id="share_pix" oninput="atualizarBarra()" type="number" placeholder="0"></span>
             <span>Débito %: <input id="share_debito" oninput="atualizarBarra()" type="number" placeholder="0"></span>
             <span>1x %: <input id="share_1x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
-            <span>2x-6x %: <input id="share_2x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
-            <span>7x-12x %: <input id="share_7x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>2x %: <input id="share_2x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>3x %: <input id="share_3x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>4x %: <input id="share_4x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>6x %: <input id="share_6x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>10x %: <input id="share_10x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
         </div>
 
         <h3 style="margin-top:20px;">Custos Fixos Concorrência <button type="button" class="btn-limpar" onclick="limparSecao('fixos')">Limpar</button></h3>
@@ -161,8 +164,8 @@
 
 <div id="areaRelatorio">
     <div class="header-rel">
-        <h1 style="margin:0;">Falcões da BA21</h1>
-        <p style="margin:5px 0;">Consultoria e Estratégia Financeira</p>
+        <h1>Falcões da BA21</h1>
+        <p>Proposta Estratégica Mercado Pago</p>
     </div>
     <div class="info-cli-rel">
         <div><b>Loja:</b> <span id="rel_loja"></span></div>
@@ -173,12 +176,12 @@
         <div id="rel_tabela_taxas"></div>
         <div id="rel_share_cofrinho" style="margin-top:20px;"></div>
         <div id="rel_grafico_box" style="text-align:center; margin-top:20px;">
-            <img id="img_grafico" style="max-width:100%; border:1px solid #eee; border-radius:10px;">
+            <img id="img_grafico" style="max-width:100%; border-radius:10px;">
         </div>
     </div>
     <div class="nota-faloes">
-        <p><b>Sobre o Cofrinho:</b> Valores até R$ 10.000,00 rendem o percentual alvo selecionado. Entre R$ 10.000,01 e R$ 100.000,00 o rendimento é de 100% do CDI. Acima de R$ 100.000,00 o valor não possui rendimento adicional.</p>
-        <p><b>AVISO LEGAL:</b> Os cálculos são estimativas baseadas nos dados informados pelo cliente. Taxas podem sofrer alterações conforme política comercial vigente.</p>
+        <p><b>Notas do Cofrinho:</b> Até R$ 10.000,00 rende o % CDI Alvo. Entre R$ 10.000,01 e R$ 100.000,00 rende 100% do CDI. Acima de R$ 100.000,00 não há rendimento extra.</p>
+        <p><b>AVISO:</b> Projeção baseada nos dados fornecidos. Sujeito a alteração de taxas vigentes.</p>
     </div>
 </div>
 
