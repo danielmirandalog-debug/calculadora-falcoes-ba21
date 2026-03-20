@@ -1,202 +1,189 @@
-document.addEventListener("DOMContentLoaded", function() {
-    gerarInputs();
-    buscarCDI();
-    document.getElementById("input_data").value = new Date().toLocaleDateString('pt-BR');
-});
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Taxas - Falcões da BA21</title>
 
-const IDs_SHARE = ["share_pix","share_debito","share_1x","share_2x","share_3x","share_4x","share_6x","share_10x"];
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js" defer></script>
 
-function gerarInputs() {
-    let mpH = ""; let outH = "";
-    for (let i = 2; i <= 18; i++) {
-        mpH += `<span><label>${i}x (%)</label> <input id="mp${i}" type="number" step="0.01" class="input-mp"></span>`;
-        outH += `<span><label>${i}x (%)</label> <input id="out${i}_manual" type="number" step="0.01" class="input-out"></span>`;
-    }
-    document.getElementById("mpParcelas").innerHTML = mpH;
-    document.getElementById("outrasParcelas").innerHTML = outH;
-}
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #FFFDE7; margin: 0; color: #333; }
+        header { background: #FFE600; color: #333; padding: 20px; text-align: center; font-size: 22px; font-weight: bold; border-bottom: 3px solid #333; }
+        .container { max-width: 800px; margin: auto; padding: 15px; }
+        .card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 5px solid #FFE600; }
+        h3 { margin-top: 0; display: flex; justify-content: space-between; align-items: center; font-size: 17px; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+        label { font-size: 12px; font-weight: bold; color: #666; display: block; margin-bottom: 3px; }
+        input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
+        button { width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 8px; background: #FFE600; color: #333; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .btn-limpar { width: auto; padding: 5px 10px; font-size: 10px; background: #f5f5f5; color: #d32f2f; border: 1px solid #ddd; margin: 0; }
+        .grid-taxas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .upload-group { display: flex; gap: 8px; margin: 10px 0; }
+        .btn-upload { flex: 1; background: #fcfcfc; border: 2px solid #FFE600; padding: 10px; border-radius: 8px; cursor: pointer; text-align: center; font-size: 12px; color: #555; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .radioLinha { display: flex; gap: 15px; margin: 10px 0; background: #f9f9f9; padding: 10px; border-radius: 8px; font-size: 14px; }
+        .barraContainer { width: 100%; height: 10px; background: #eee; border-radius: 5px; overflow: hidden; margin: 10px 0; }
+        .barraProgresso { height: 100%; width: 0%; background: #FFE600; transition: 0.4s; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
+        th, td { border: 1px solid #eee; padding: 8px; text-align: center; }
+        th { background: #FFF9C4; }
+        .taxaRuim { color: #d32f2f; font-weight: bold; }
+        .resumo-financeiro { background:#e3f2fd; padding:15px; border-radius:8px; margin-top:15px; border-left: 5px solid #2196f3; font-size: 14px; line-height: 1.6; }
+        .check-linha { display: flex; align-items: center; justify-content: flex-start; gap: 8px; margin: 10px 0; background: #fffde7; padding: 12px; border-radius: 8px; border: 1px dashed #ffd600; }
+        .check-linha input { width: 18px; height: 18px; margin: 0; cursor: pointer; }
+        .check-linha label { margin: 0; cursor: pointer; font-size: 13px; color: #333; display: inline; }
 
-async function buscarCDI() {
-    try {
-        const r = await fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados/ultimos/1?formato=json');
-        const d = await r.json();
-        window.selicAtual = parseFloat(d[0].valor);
-    } catch (e) { window.selicAtual = 10.75; }
-}
+        /* Relatório Oculto */
+        #areaRelatorio { position: absolute; left: -9999px; width: 700px; background: white; padding: 40px; color: #333; }
+        .header-rel { text-align: center; border-bottom: 4px solid #FFE600; padding-bottom: 20px; margin-bottom: 25px; }
+        .info-cli-rel { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; font-size: 15px; background: #fcfcfc; padding: 20px; border-radius: 10px; border: 1px solid #eee; }
+        .nota-faloes { font-size: 12px; color: #555; margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px; text-align: justify; }
+    </style>
+</head>
+<body>
 
-function limparSecao(tipo) {
-    if (tipo === 'mp') {
-        document.getElementById("mp_pix").value = "0.49"; document.getElementById("mp_debito").value = "0.99";
-        document.getElementById("mp1").value = "3.05";
-        document.querySelectorAll(".input-mp").forEach(i => i.value = "");
-    } else if (tipo === 'out') {
-        ["out_pix","out_debito","out1","mdr1","mdr2","mdr3","antecipacao","out_pix_manual","out_debito_manual","out1_manual"].forEach(id => {
-            if(document.getElementById(id)) document.getElementById(id).value = "";
-        });
-        document.querySelectorAll(".input-out").forEach(i => i.value = "");
-    } else if (tipo === 'share') {
-        IDs_SHARE.forEach(id => document.getElementById(id).value = "");
-        atualizarBarra();
-    } else if (tipo === 'fixos') {
-        ["fixo_sistema","fixo_maquina","fixo_cesta","fixo_manutencao"].forEach(id => document.getElementById(id).value = "");
-        document.getElementById("check_pix_taxa").checked = false;
-    } else if (tipo === 'cofrinho') {
-        document.getElementById("cofrinho_reserva").value = "";
-        document.getElementById("cofrinho_cdi_alvo").value = "105";
-    }
-}
+<header>Falcões da BA21 - Simulador Premium</header>
 
-function trocarModoOutras() {
-    let m = document.querySelector('input[name="modoOutras"]:checked').value;
-    document.getElementById("modoMDR").style.display = (m === "mdr") ? "block" : "none";
-    document.getElementById("modoManual").style.display = (m === "manual") ? "block" : "none";
-}
+<div class="container">
+    <div class="card">
+        <h3>Atendimento <button type="button" class="btn-limpar" onclick="location.reload()">Resetar</button></h3>
+        <div class="grid-taxas">
+            <span><label>Empresa</label><input id="input_loja" type="text" placeholder="Ex: Padaria Central"></span>
+            <span><label>Cliente</label><input id="input_cliente" type="text" placeholder="Ex: João Silva"></span>
+        </div>
+        <span><label>Data</label><input id="input_data" type="text" readonly style="background:#f5f5f5"></span>
+    </div>
 
-function simular() {
-    let v = parseFloat(document.getElementById("valor").value);
-    if (!v) { alert("Informe o valor da venda."); return; }
+    <div class="card">
+        <label>Valor da Venda para Comparação (R$)</label>
+        <input id="valor" type="number" step="0.01" placeholder="0.00">
+    </div>
 
-    let mp = { pix: parseFloat(mp_pix.value), debito: parseFloat(mp_debito.value), 1: parseFloat(mp1.value) };
-    for (let i = 2; i <= 18; i++) {
-        let val = document.getElementById("mp" + i).value;
-        mp[i] = val === "" ? null : parseFloat(val);
-    }
+    <div class="card">
+        <h3>Mercado Pago <button type="button" class="btn-limpar" onclick="limparSecao('mp')">Limpar</button></h3>
+        <div class="grid-taxas">
+            <span><label>Pix (%)</label> <input id="mp_pix" type="number" step="0.01" value="0.49"></span>
+            <span><label>Débito (%)</label> <input id="mp_debito" type="number" step="0.01" value="0.99"></span>
+            <span><label>Crédito 1x (%)</label> <input id="mp1" type="number" step="0.01" value="3.05"></span>
+        </div>
+        <div class="upload-group">
+            <label class="btn-upload"><input type="file" capture="camera" style="display:none" onchange="processarOCR(event, 'mp')">📷 Câmera</label>
+            <label class="btn-upload"><input type="file" style="display:none" onchange="processarOCR(event, 'mp')">📁 Arquivo</label>
+        </div>
+        <div id="mpParcelas" class="grid-taxas"></div>
+    </div>
 
-    let out = {};
-    let modo = document.querySelector('input[name="modoOutras"]:checked').value;
-    if (modo === "manual") {
-        out.pix = parseFloat(document.getElementById("out_pix_manual").value) || 0;
-        out.debito = parseFloat(document.getElementById("out_debito_manual").value) || 0;
-        out[1] = parseFloat(document.getElementById("out1_manual").value) || 0;
-        for (let i = 2; i <= 18; i++) out[i] = parseFloat(document.getElementById("out" + i + "_manual").value) || 0;
-    } else {
-        out.pix = parseFloat(out_pix.value) || 0; out.debito = parseFloat(out_debito.value) || 0;
-        out[1] = parseFloat(out1.value) || 0;
-        let m1 = parseFloat(mdr1.value)||0, m2 = parseFloat(mdr2.value)||0, m3 = parseFloat(mdr3.value)||0, ant = parseFloat(antecipacao.value)||0;
-        for (let i = 2; i <= 6; i++) out[i] = m1 + (ant * (i-1));
-        for (let i = 7; i <= 12; i++) out[i] = m2 + (ant * (i-1));
-        for (let i = 13; i <= 18; i++) out[i] = m3 + (ant * (i-1));
-    }
+    <div class="card">
+        <h3>Concorrência <button type="button" class="btn-limpar" onclick="limparSecao('out')">Limpar</button></h3>
+        <div class="radioLinha">
+            <label><input type="radio" name="modoOutras" value="mdr" checked onchange="trocarModoOutras()"> MDR + Ant.</label>
+            <label><input type="radio" name="modoOutras" value="manual" onchange="trocarModoOutras()"> Manual / Foto</label>
+        </div>
+        
+        <div id="modoMDR">
+            <div class="grid-taxas">
+                <span><label>Pix (%)</label> <input id="out_pix" type="number" step="0.01" placeholder="0.00"></span>
+                <span><label>Débito (%)</label> <input id="out_debito" type="number" step="0.01" placeholder="0.00"></span>
+                <span><label>Crédito 1x (%)</label> <input id="out1" type="number" step="0.01" placeholder="0.00"></span>
+                <span><label>MDR 2-6x (%)</label> <input id="mdr1" type="number" step="0.01" placeholder="0.00"></span>
+                <span><label>MDR 7-12x (%)</label> <input id="mdr2" type="number" step="0.01" placeholder="0.00"></span>
+                <span><label>MDR 13-18x (%)</label> <input id="mdr3" type="number" step="0.01" placeholder="0.00"></span>
+            </div>
+            <label>Antecipação Mensal (%)</label> <input id="antecipacao" type="number" step="0.01" placeholder="0.00">
+        </div>
 
-    let html = `<table><tr><th>Plano</th><th>Mercado Pago</th><th>Concorrência</th><th>Diferença</th></tr>`;
-    let parcelas = ["pix", "debito"];
-    for(let i=1; i<=18; i++) parcelas.push(i);
+        <div id="modoManual" style="display:none">
+            <div class="upload-group">
+                <label class="btn-upload"><input type="file" capture="camera" style="display:none" onchange="processarOCR(event, 'out')">📷 Câmera</label>
+                <label class="btn-upload"><input type="file" style="display:none" onchange="processarOCR(event, 'out')">📁 Arquivo</label>
+            </div>
+            <div class="grid-taxas">
+                 <span><label>Pix (%)</label> <input id="out_pix_manual" type="number" step="0.01"></span>
+                 <span><label>Débito (%)</label> <input id="out_debito_manual" type="number" step="0.01"></span>
+                 <span><label>Crédito 1x (%)</label> <input id="out1_manual" type="number" step="0.01"></span>
+            </div>
+            <div id="outrasParcelas" class="grid-taxas"></div>
+        </div>
+    </div>
 
-    parcelas.forEach(p => {
-        let tMP = (p === "pix") ? mp.pix : (p === "debito" ? mp.debito : mp[p]);
-        if (tMP !== null && !isNaN(tMP)) {
-            let tOut = (p === "pix") ? out.pix : (p === "debito" ? out.debito : out[p]);
-            let nome = p === "pix" ? "Pix" : p === "debito" ? "Débito" : p + "x";
-            let dif = (tOut - tMP).toFixed(2);
-            html += `<tr><td><b>${nome}</b></td><td class="${tMP > tOut ? 'taxaRuim' : ''}">${tMP.toFixed(2)}%</td><td>${tOut.toFixed(2)}%</td><td style="color:${dif >= 0 ? 'green' : 'red'}"><b>${dif}%</b></td></tr>`;
-        }
-    });
-    document.getElementById("resultado").innerHTML = html + "</table>";
-    document.getElementById("btnExportarSimples").style.display = "block";
-}
+    <div class="card">
+        <button onclick="simular()">COMPARAR TAXAS</button>
+        <div id="resultado"></div>
+        <button id="btnExportarSimples" onclick="exportarRelatorio(true)" style="background: #555; color: white; margin-top: 15px; display:none;">Exportar Apenas Comparação</button>
+    </div>
 
-function atualizarBarra() {
-    let soma = 0;
-    IDs_SHARE.forEach(id => soma += parseFloat(document.getElementById(id).value) || 0);
-    document.getElementById("contador").innerText = Math.round(soma) + "%";
-    document.getElementById("barra").style.width = soma + "%";
-    document.getElementById("barra").style.background = (Math.round(soma) === 100) ? "#4CAF50" : "#FFE600";
-}
+    <div class="card">
+        <h3>Faturamento e Share <button type="button" class="btn-limpar" onclick="limparSecao('share')">Limpar</button></h3>
+        <div class="barraContainer"><div class="barraProgresso" id="barra"></div></div>
+        <div style="text-align:right; font-weight:bold; font-size:12px;">Total: <span id="contador">0%</span> (Meta 100%)</div>
+        
+        <label>Faturamento Mensal Estimado (R$)</label>
+        <input id="faturamento" type="number" step="0.01" placeholder="0.00">
+        
+        <div class="grid-taxas">
+            <span>Pix %: <input id="share_pix" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>Débito %: <input id="share_debito" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>1x %: <input id="share_1x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>2x %: <input id="share_2x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>3x %: <input id="share_3x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>4x %: <input id="share_4x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>6x %: <input id="share_6x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>10x %: <input id="share_10x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+        </div>
 
-function simularFaturamento() {
-    let soma = 0;
-    IDs_SHARE.forEach(id => soma += parseFloat(document.getElementById(id).value) || 0);
-    if (Math.round(soma) !== 100) return alert("O Share total deve somar 100%!");
+        <h3 style="margin-top:20px;">Custos Fixos Concorrência <button type="button" class="btn-limpar" onclick="limparSecao('fixos')">Limpar</button></h3>
+        <div class="grid-taxas">
+            <span><label>Mensalidade Sistema (R$)</label><input id="fixo_sistema" type="number" placeholder="0.00"></span>
+            <span><label>Aluguel Máquina (R$)</label><input id="fixo_maquina" type="number" placeholder="0.00"></span>
+            <span><label>Cesta de Serviços (R$)</label><input id="fixo_cesta" type="number" placeholder="0.00"></span>
+            <span><label>Manutenção Conta (R$)</label><input id="fixo_manutencao" type="number" placeholder="0.00"></span>
+        </div>
+        
+        <div class="check-linha">
+            <input type="checkbox" id="check_pix_taxa">
+            <label for="check_pix_taxa">Cobrar taxa extra de Pix (1%) na concorrência?</label>
+        </div>
 
-    let f = parseFloat(faturamento.value) || 0;
-    if(f <= 0) return alert("Informe o faturamento mensal.");
+        <h3 style="margin-top:20px;">Cofrinho <button type="button" class="btn-limpar" onclick="limparSecao('cofrinho')">Limpar</button></h3>
+        <div class="grid-taxas">
+            <span><label>Aporte Mensal (R$)</label><input id="cofrinho_reserva" type="number" placeholder="0.00"></span>
+            <span><label>% CDI Alvo (105-140)</label><input id="cofrinho_cdi_alvo" type="number" value="105"></span>
+        </div>
 
-    let fixos = (parseFloat(fixo_sistema.value)||0) + (parseFloat(fixo_maquina.value)||0) + (parseFloat(fixo_cesta.value)||0) + (parseFloat(fixo_manutencao.value)||0);
-    
-    // Cálculo de economia baseado na diferença média de taxas (aprox 2.3% economizados)
-    let ecoTaxas = f * 0.023; 
-    if(document.getElementById("check_pix_taxa").checked) {
-        let pPix = parseFloat(document.getElementById("share_pix").value) || 0;
-        ecoTaxas += (f * (pPix/100)) * 0.01;
-    }
+        <button onclick="simularFaturamento()" style="background:#3483FA; color:white;">CALCULAR PROJEÇÃO COMPLETA</button>
+        <div id="resultadoFaturamento"></div>
+        <canvas id="graficoEconomia" style="margin-top:20px; max-height: 300px;"></canvas>
+    </div>
 
-    let ecoMes = ecoTaxas + fixos;
-    let res = parseFloat(cofrinho_reserva.value) || 0;
-    let cdi = (window.selicAtual || 10.75) - 0.1;
-    let alvo = (parseFloat(cofrinho_cdi_alvo.value) || 105) / 100;
+    <div class="card">
+        <button onclick="exportarRelatorio(false)" style="background: #222; color: white;">GERAR RELATÓRIO COMPLETO</button>
+    </div>
+</div>
 
-    const calc = (m) => {
-        let s = 0;
-        for(let i=0; i<m; i++){
-            s += res;
-            let r = (s <= 10000) ? s * (cdi * alvo / 1200) : (s <= 100000 ? s * (cdi / 1200) : 100000 * (cdi / 1200));
-            s += r;
-        }
-        return s;
-    };
+<div id="areaRelatorio">
+    <div class="header-rel">
+        <h1>Falcões da BA21</h1>
+        <p>Proposta Estratégica Mercado Pago</p>
+    </div>
+    <div class="info-cli-rel">
+        <div><b>Loja:</b> <span id="rel_loja"></span></div>
+        <div><b>Data:</b> <span id="rel_data"></span></div>
+        <div><b>Responsável:</b> <span id="rel_cliente"></span></div>
+    </div>
+    <div id="rel_corpo">
+        <div id="rel_tabela_taxas"></div>
+        <div id="rel_share_cofrinho" style="margin-top:20px;"></div>
+        <div id="rel_grafico_box" style="text-align:center; margin-top:20px;">
+            <img id="img_grafico" style="max-width:100%; border-radius:10px;">
+        </div>
+    </div>
+    <div class="nota-faloes">
+        <p><b>Notas do Cofrinho:</b> Até R$ 10.000,00 rende o % CDI Alvo. Entre R$ 10.000,01 e R$ 100.000,00 rende 100% do CDI. Acima de R$ 100.000,00 não há rendimento extra.</p>
+        <p><b>AVISO:</b> Projeção baseada nos dados fornecidos. Sujeito a alteração de taxas vigentes.</p>
+    </div>
+</div>
 
-    let c1 = calc(12), c5 = calc(60);
-
-    document.getElementById("resultadoFaturamento").innerHTML = `
-        <div class="resumo-financeiro">
-            <h4>💰 Resultados da Consultoria</h4>
-            <b>Economia Mensal:</b> R$ ${ecoMes.toFixed(2)}<br>
-            <b>Economia 1 Ano:</b> R$ ${(ecoMes * 12).toFixed(2)}<br>
-            <b>Economia 5 Anos:</b> R$ ${(ecoMes * 60).toFixed(2)}<br><hr>
-            <h4>📈 Projeção de Investimento (Cofrinho)</h4>
-            <b>Saldo 1 Ano:</b> R$ ${c1.toFixed(2)}<br>
-            <b>Saldo 5 Anos:</b> R$ ${c5.toFixed(2)}
-        </div>`;
-    
-    if (window.g) window.g.destroy();
-    window.g = new Chart(document.getElementById("graficoEconomia"), {
-        type: 'bar',
-        data: { labels: ["Eco. 1 Ano", "Eco. 5 Anos", "Cofre 5 Anos"], datasets: [{ label: 'R$', data: [ecoMes*12, ecoMes*60, c5], backgroundColor: ['#FFE600','#FFD400','#3483FA'] }] },
-        options: { animation: false }
-    });
-}
-
-function exportarRelatorio(apenasTaxas) {
-    document.getElementById("rel_loja").innerText = document.getElementById("input_loja").value || "---";
-    document.getElementById("rel_cliente").innerText = document.getElementById("input_cliente").value || "---";
-    document.getElementById("rel_data").innerText = document.getElementById("input_data").value;
-    document.getElementById("rel_tabela_taxas").innerHTML = "<h3>Comparativo de Taxas</h3>" + document.getElementById("resultado").innerHTML;
-    
-    let boxCorpo = document.getElementById("rel_share_cofrinho");
-    let boxGrafico = document.getElementById("rel_grafico_box");
-
-    if (apenasTaxas) {
-        boxCorpo.style.display = "none"; boxGrafico.style.display = "none";
-    } else {
-        boxCorpo.style.display = "block"; boxGrafico.style.display = "block";
-        boxCorpo.innerHTML = "<h3>Projeção Financeira</h3>" + document.getElementById("resultadoFaturamento").innerHTML;
-        if (window.g) {
-            document.getElementById("img_grafico").src = document.getElementById("graficoEconomia").toDataURL();
-        }
-    }
-
-    setTimeout(() => {
-        html2canvas(document.getElementById("areaRelatorio"), { scale: 2 }).then(canvas => {
-            let link = document.createElement("a");
-            link.download = `BA21_${document.getElementById("input_loja").value || 'Proposta'}.png`;
-            link.href = canvas.toDataURL();
-            link.click();
-        });
-    }, 600);
-}
-
-async function processarOCR(event, pref) {
-    const file = event.target.files[0];
-    if(!file) return;
-    alert("Processando imagem...");
-    const res = await Tesseract.recognize(file, 'por');
-    let txt = res.data.text.toLowerCase().replace(/,/g, ".");
-    let regex = /(\d{1,2})\s*x\s*([\d.]+)/g;
-    let match;
-    while ((match = regex.exec(txt)) !== null) {
-        let p = parseInt(match[1]), t = parseFloat(match[2]);
-        let id = (p === 1) ? (pref === "mp" ? "mp1" : "out1_manual") : (pref + p + (pref === "out" ? "_manual" : ""));
-        if(document.getElementById(id)) document.getElementById(id).value = t.toFixed(2);
-    }
-    alert("Pronto!");
-}
+</body>
+</html>
