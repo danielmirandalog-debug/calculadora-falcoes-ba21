@@ -132,25 +132,24 @@ function simularFaturamento() {
     let selic = parseFloat(document.getElementById("cofrinho_percentual").value) || 10.75;
     let cdiAlvo = parseFloat(document.getElementById("cofrinho_cdi_alvo").value) || 105;
     
-    // Lógica do Cofrinho com Faixas de Rendimento
+// Lógica do Cofrinho com Faixas de Rendimento (Corrigida para 100k)
     const calcCofreComFaixas = (meses) => {
         let saldo = 0;
-        // Aproximação do CDI (Selic - 0.10)
-        let cdiAnual = selic - 0.10; 
+        let cdiAnual = selic - 0.10; // Aproximação CDI
         
         for(let i=0; i<meses; i++) {
             saldo += res;
             let rendimentoMes = 0;
             
             if (saldo <= 10000) {
-                // Rende o percentual definido (ex 105%)
+                // Rende o percentual personalizado (ex: 105% do CDI)
                 rendimentoMes = saldo * ((cdiAnual * (cdiAlvo/100)) / 100 / 12);
-            } else if (saldo > 10000 && saldo <= 1000000) {
-                // Rende 100% sobre tudo (regra simplificada do montante)
+            } else if (saldo > 10000 && saldo <= 100000) {
+                // Rende exatamente 100% do CDI entre 10k e 100k
                 rendimentoMes = saldo * (cdiAnual / 100 / 12);
             } else {
-                // Acima de 1 milhão só rende até o limite
-                rendimentoMes = 1000000 * (cdiAnual / 100 / 12);
+                // Acima de 100k não há rendimento adicional nesta regra
+                rendimentoMes = 100000 * (cdiAnual / 100 / 12);
             }
             saldo += rendimentoMes;
         }
