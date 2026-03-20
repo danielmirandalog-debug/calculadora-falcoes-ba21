@@ -5,7 +5,6 @@ window.onload = function() {
 
 function gerarInputs() {
     let mpH = ""; let outH = "";
-    // Limite de 18x conforme solicitado
     for (let i = 2; i <= 18; i++) {
         mpH += `<span><label>${i}x (%)</label> <input id="mp${i}" type="number" step="0.01" class="input-mp"></span>`;
         outH += `<span><label>${i}x (%)</label> <input id="out${i}_manual" type="number" step="0.01" class="input-out"></span>`;
@@ -29,18 +28,18 @@ function limparSecao(tipo) {
         document.getElementById("mp1").value = "3.05";
         document.querySelectorAll(".input-mp").forEach(i => i.value = "");
     } else if (tipo === 'out') {
-        ["out_pix","out_debito","out1","mdr1","mdr2","mdr3","antecipacao","out_pix_manual","out_debito_manual","out1_manual"].forEach(id => {
-            let el = document.getElementById(id); if(el) el.value = "";
-        });
+        const ids = ["out_pix","out_debito","out1","mdr1","mdr2","mdr3","antecipacao","out_pix_manual","out_debito_manual","out1_manual"];
+        ids.forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = ""; });
         document.querySelectorAll(".input-out").forEach(i => i.value = "");
     } else if (tipo === 'share') {
-        ["share_pix","share_debito","share_1x","share_2x","share_4x","share_6x","share_10x"].forEach(id => {
-            document.getElementById(id).value = "";
-        });
+        ["share_pix","share_debito","share_1x","share_2x","share_4x","share_6x","share_10x"].forEach(id => document.getElementById(id).value = "");
         atualizarBarra();
+    } else if (tipo === 'fixos') {
+        ["fixo_sistema","fixo_maquina","fixo_manutencao","fixo_cesta"].forEach(id => document.getElementById(id).value = "");
+        document.getElementById("check_pix_taxa").checked = false;
     } else if (tipo === 'cofrinho') {
-        document.getElementById("custos_fixos_total").value = "";
         document.getElementById("cofrinho_reserva").value = "";
+        document.getElementById("cofrinho_cdi_alvo").value = "105";
         buscarCDI();
     }
 }
@@ -55,14 +54,12 @@ function simular() {
     let v = parseFloat(document.getElementById("valor").value);
     if (!v) { alert("Digite o valor da venda."); return; }
 
-    // Coleta Taxas MP
     let mp = { pix: parseFloat(mp_pix.value), debito: parseFloat(mp_debito.value), 1: parseFloat(mp1.value) };
     for (let i = 2; i <= 18; i++) {
         let val = document.getElementById("mp" + i).value;
         mp[i] = val === "" ? null : parseFloat(val);
     }
 
-    // Coleta Taxas Concorrência
     let out = {};
     let modo = document.querySelector('input[name="modoOutras"]:checked').value;
 
@@ -76,12 +73,9 @@ function simular() {
         out.debito = parseFloat(out_debito.value) || 0;
         out[1] = parseFloat(out1.value) || 0;
         let m1 = parseFloat(mdr1.value)||0, m2 = parseFloat(mdr2.value)||0, m3 = parseFloat(mdr3.value)||0, ant = parseFloat(antecipacao.value)||0;
-        // Lógica MDR + Antecipação convertendo para taxa cheia (análise de conversão)
         for (let i = 2; i <= 6; i++) out[i] = m1 + (ant * (i-1));
         for (let i = 7; i <= 12; i++) out[i] = m2 + (ant * (i-1));
         for (let i = 13; i <= 18; i++) out[i] = m3 + (ant * (i-1));
-        
-        // Atualiza os campos manuais escondidos para que o usuário veja a conversão se trocar de aba
         for (let i = 2; i <= 18; i++) document.getElementById("out" + i + "_manual").value = out[i].toFixed(2);
         document.getElementById("out_pix_manual").value = out.pix;
         document.getElementById("out_debito_manual").value = out.debito;
@@ -89,15 +83,11 @@ function simular() {
     }
 
     let html = `<table><tr><th>Parc</th><th>MP %</th><th>Líq.</th><th>Conc %</th><th>Líq.</th></tr>`;
-    
-    // Lista de todas as parcelas possíveis
     let todasParcelas = ["pix", "debito"];
     for(let i=1; i<=18; i++) todasParcelas.push(i);
     
     todasParcelas.forEach(p => {
         let tMP = (p === "debito") ? mp.debito : mp[p];
-        
-        // SÓ MOSTRA SE O CAMPO DO MERCADO PAGO ESTIVER PREENCHIDO
         if (tMP !== null && !isNaN(tMP)) {
             let n = p === "pix" ? "Pix" : p === "debito" ? "Deb" : p + "x";
             let tOut = (p === "debito") ? out.debito : out[p];
@@ -107,14 +97,13 @@ function simular() {
         }
     });
     document.getElementById("resultado").innerHTML = html + "</table>";
-    document.getElementById("dataSimulacao").innerText = "Gerado em: " + new Date().toLocaleString();
 }
 
 function atualizarBarra() {
     let ids = ["share_pix","share_debito","share_1x","share_2x","share_4x","share_6x","share_10x"];
     let soma = 0;
     ids.forEach(id => soma += parseFloat(document.getElementById(id).value) || 0);
-    if(soma > 100) { alert("Soma não pode exceder 100%"); return; }
+    if(soma > 100) { alert("A soma ultrapassou 100%"); return; }
     document.getElementById("contador").innerText = soma + "%";
     document.getElementById("barra").style.width = soma + "%";
 }
@@ -123,48 +112,79 @@ function simularFaturamento() {
     let f = parseFloat(faturamento.value) || 0;
     if(f <= 0) { alert("Informe o faturamento"); return; }
     
-    let econTaxas = f * 0.028; // Estimativa média de ganho de 2.8%
-    let fixo = parseFloat(custos_fixos_total.value) || 0;
-    let ecoMes = econTaxas + fixo;
-    
+    let econTaxas = f * 0.028; 
+    let sistema = parseFloat(fixo_sistema.value) || 0;
+    let maquina = parseFloat(fixo_maquina.value) || 0;
+    let manut = parseFloat(fixo_manutencao.value) || 0;
+    let cesta = parseFloat(fixo_cesta.value) || 0;
+    let totalFixos = sistema + maquina + manut + cesta;
+
+    let custoExtraPix = 0;
+    if(document.getElementById("check_pix_taxa").checked) {
+        let percentualPixNoShare = parseFloat(document.getElementById("share_pix").value) || 0;
+        if(percentualPixNoShare > 0) {
+            custoExtraPix = (f * (percentualPixNoShare/100)) * 0.01;
+        }
+    }
+
+    let ecoMes = econTaxas + totalFixos + custoExtraPix;
     let res = parseFloat(cofrinho_reserva.value) || 0;
-    let cdi = parseFloat(cofrinho_percentual.value) || 10.75;
+    let selic = parseFloat(document.getElementById("cofrinho_percentual").value) || 10.75;
+    let cdiAlvo = parseFloat(document.getElementById("cofrinho_cdi_alvo").value) || 105;
     
-    // Funções de rendimento (Cálculo aproximado de juros compostos mensalizados)
-    const calcCofre = (meses) => {
+    // Lógica do Cofrinho com Faixas de Rendimento
+    const calcCofreComFaixas = (meses) => {
         let saldo = 0;
-        let taxaMensal = (cdi / 100) / 12;
+        // Aproximação do CDI (Selic - 0.10)
+        let cdiAnual = selic - 0.10; 
+        
         for(let i=0; i<meses; i++) {
-            saldo = (saldo + res) * (1 + taxaMensal);
+            saldo += res;
+            let rendimentoMes = 0;
+            
+            if (saldo <= 10000) {
+                // Rende o percentual definido (ex 105%)
+                rendimentoMes = saldo * ((cdiAnual * (cdiAlvo/100)) / 100 / 12);
+            } else if (saldo > 10000 && saldo <= 1000000) {
+                // Rende 100% sobre tudo (regra simplificada do montante)
+                rendimentoMes = saldo * (cdiAnual / 100 / 12);
+            } else {
+                // Acima de 1 milhão só rende até o limite
+                rendimentoMes = 1000000 * (cdiAnual / 100 / 12);
+            }
+            saldo += rendimentoMes;
         }
         return saldo;
     };
 
-    let cof1 = calcCofre(12);
-    let cof5 = calcCofre(60);
+    let cof1 = calcCofreComFaixas(12);
+    let cof5 = calcCofreComFaixas(60);
 
     document.getElementById("resultadoFaturamento").innerHTML = `
         <div class="resumo-financeiro">
-            <b>💰 Economia Mensal Estimada:</b> R$ ${ecoMes.toFixed(2)}<br>
+            <b>💰 Economia Mensal Total:</b> R$ ${ecoMes.toFixed(2)}<br>
+            <small>(Taxas + Fixos + Custo Extra Pix)</small><hr>
             <b>📅 Economia em 1 Ano:</b> R$ ${(ecoMes * 12).toFixed(2)}<br>
-            <b>📅 Economia em 5 Anos:</b> R$ ${(ecoMes * 60).toFixed(2)}<br><br>
+            <b>📅 Economia em 5 Anos:</b> R$ ${(ecoMes * 60).toFixed(2)}<br><hr>
             <b>📈 Saldo Cofrinho em 1 Ano:</b> R$ ${cof1.toFixed(2)}<br>
             <b>📈 Saldo Cofrinho em 5 Anos:</b> R$ ${cof5.toFixed(2)}
         </div>`;
     
+    document.getElementById("notaInformativa").style.display = "block";
+
     let ctx = document.getElementById("graficoEconomia");
     if (window.g) window.g.destroy();
     window.g = new Chart(ctx, { type: 'bar', data: { labels: ["1 ano", "5 anos", "Cofre 5a"], datasets: [{ label: 'R$', data: [ecoMes*12, ecoMes*60, cof5], backgroundColor: ['#FFE600','#FFD400','#3483FA'] }] } });
 }
 
-// OCR
+// OCR e Exportação
 async function processarOCRMP(event) { limparSecao('mp'); executarOCR(event, "mp"); }
 async function processarOCRConc(event) { limparSecao('out'); executarOCR(event, "out"); }
 
 async function executarOCR(event, pref) {
     const file = event.target.files[0];
     if(!file) return;
-    alert("Processando imagem...");
+    alert("Lendo imagem...");
     const res = await Tesseract.recognize(file, 'por');
     let txt = res.data.text.toLowerCase().replace(/,/g, ".");
     let regex = /(\d{1,2})\s*x\s*([\d.]+)/g;
@@ -182,7 +202,7 @@ async function executarOCR(event, pref) {
 function exportar() {
     html2canvas(document.getElementById("conteudoParaExportar")).then(canvas => {
         let link = document.createElement("a");
-        link.download = "Relatorio_BA21.png";
+        link.download = "Relatorio_Faloes_BA21.png";
         link.href = canvas.toDataURL();
         link.click();
     });
