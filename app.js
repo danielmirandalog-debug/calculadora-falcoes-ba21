@@ -30,7 +30,7 @@ function limparSecao(tipo) {
         document.getElementById("mp1").value = "3.05";
         document.querySelectorAll(".input-mp").forEach(i => i.value = "");
     } else if (tipo === 'out') {
-        ["out_pix","out_debito","out1","mdr1","mdr2","mdr3","antecipacao","out_pix_manual","out_debito_manual","out1_manual"].forEach(id => {
+        ["out_pix","out_debito","out_mdr_base","antecipacao","out_pix_manual","out_debito_manual","out1_manual"].forEach(id => {
             if(document.getElementById(id)) document.getElementById(id).value = "";
         });
         document.querySelectorAll(".input-out").forEach(i => i.value = "");
@@ -56,42 +56,46 @@ function simular() {
     let v = parseFloat(document.getElementById("valor").value);
     if (!v) { alert("Informe o valor da venda."); return; }
 
-    let mp = { pix: parseFloat(mp_pix.value), debito: parseFloat(mp_debito.value), 1: parseFloat(mp1.value) };
-    for (let i = 2; i <= 18; i++) {
+    let mp = { pix: parseFloat(mp_pix.value), debito: parseFloat(mp_debito.value) };
+    for (let i = 1; i <= 18; i++) {
         let val = document.getElementById("mp" + i).value;
         mp[i] = val === "" ? null : parseFloat(val);
     }
 
     let out = {};
     let modo = document.querySelector('input[name="modoOutras"]:checked').value;
+
     if (modo === "manual") {
         out.pix = parseFloat(document.getElementById("out_pix_manual").value) || 0;
         out.debito = parseFloat(document.getElementById("out_debito_manual").value) || 0;
         out[1] = parseFloat(document.getElementById("out1_manual").value) || 0;
         for (let i = 2; i <= 18; i++) out[i] = parseFloat(document.getElementById("out" + i + "_manual").value) || 0;
     } else {
-        out.pix = parseFloat(out_pix.value) || 0; out.debito = parseFloat(out_debito.value) || 0;
-        out[1] = parseFloat(out1.value) || 0;
-        let m1 = parseFloat(mdr1.value)||0, m2 = parseFloat(mdr2.value)||0, m3 = parseFloat(mdr3.value)||0, ant = parseFloat(antecipacao.value)||0;
-        for (let i = 2; i <= 6; i++) out[i] = m1 + (ant * (i-1));
-        for (let i = 7; i <= 12; i++) out[i] = m2 + (ant * (i-1));
-        for (let i = 13; i <= 18; i++) out[i] = m3 + (ant * (i-1));
+        out.pix = parseFloat(out_pix.value) || 0;
+        out.debito = parseFloat(out_debito.value) || 0;
+        let mdrBase = parseFloat(out_mdr_base.value) || 0;
+        let antMensal = parseFloat(antecipacao.value) || 0;
+
+        // LÓGICA MDR + ANTECIPAÇÃO CORRIGIDA
+        for (let i = 1; i <= 18; i++) {
+            // Custo de antecipação médio: Taxa Mensal * (Nº de meses médio)
+            let custoAnt = antMensal * (i + 1) / 2;
+            out[i] = mdrBase + custoAnt;
+        }
     }
 
     let html = `<table><tr><th>Plano</th><th>Mercado Pago</th><th>Concorrência</th><th>Diferença</th></tr>`;
-    let parcelas = ["pix", "debito"];
-    for(let i=1; i<=18; i++) parcelas.push(i);
+    let planosExibicao = ["pix", "debito", 1, 2, 3, 4, 5, 6, 10, 12, 18];
 
     let vitoriasMP = 0;
 
-    parcelas.forEach(p => {
+    planosExibicao.forEach(p => {
         let tMP = (p === "pix") ? mp.pix : (p === "debito" ? mp.debito : mp[p]);
+        let tOut = (p === "pix") ? out.pix : (p === "debito" ? out.debito : out[p]);
+
         if (tMP !== null && !isNaN(tMP)) {
-            let tOut = (p === "pix") ? out.pix : (p === "debito" ? out.debito : out[p]);
             let nome = p === "pix" ? "Pix" : p === "debito" ? "Débito" : p + "x";
             let dif = (tOut - tMP).toFixed(2);
-            
-            // Blindagem das cores: Azul para vitória do MP, Vermelho para derrota
             let corDiferenca = dif >= 0 ? '#007bff' : 'red';
             if (dif > 0) vitoriasMP++;
 
@@ -100,11 +104,7 @@ function simular() {
     });
 
     html += "</table>";
-    
-    // Frase do Campeão
-    if (vitoriasMP > 0) {
-        html += `<div class="campeao-msg">Mercado Pago Campeão!!! 🏆</div>`;
-    }
+    if (vitoriasMP > 0) html += `<div class="campeao-msg">Mercado Pago Campeão!!! 🏆</div>`;
 
     document.getElementById("resultado").innerHTML = html;
     document.getElementById("btnExportarSimples").style.display = "block";
@@ -128,8 +128,8 @@ function simularFaturamento() {
 
     let fixos = (parseFloat(fixo_sistema.value)||0) + (parseFloat(fixo_maquina.value)||0) + (parseFloat(fixo_cesta.value)||0) + (parseFloat(fixo_manutencao.value)||0);
     
-    // Base de economia estratégica
-    let ecoTaxas = f * 0.023; 
+    // Estimativa de economia baseada nas taxas MDR vs MP
+    let ecoTaxas = f * 0.021; 
     if(document.getElementById("check_pix_taxa").checked) {
         let pPix = parseFloat(document.getElementById("share_pix").value) || 0;
         ecoTaxas += (f * (pPix/100)) * 0.01;
