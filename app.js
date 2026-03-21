@@ -64,46 +64,68 @@ function simular() {
 
     let out = {};
     let modo = document.querySelector('input[name="modoOutras"]:checked').value;
-    if (modo === "manual") {
+
+    if (modo === "mdr") {
+        out.pix = parseFloat(out_pix.value) || 0; 
+        out.debito = parseFloat(out_debito.value) || 0;
+        out[1] = parseFloat(out1.value) || 0;
+        let m1 = parseFloat(mdr1.value)||0, m2 = parseFloat(mdr2.value)||0, m3 = parseFloat(mdr3.value)||0, ant = parseFloat(antecipacao.value)||0;
+        
+        // Aplica a lógica MDR Eficaz (MDR + Antecipação x Parcelas) e preenche os campos manuais
+        for (let i = 2; i <= 6; i++) {
+            let taxaCalc = m1 + (ant * i); // Lógica de antecipação correta por parcela
+            out[i] = taxaCalc;
+            document.getElementById("out" + i + "_manual").value = taxaCalc.toFixed(2);
+        }
+        for (let i = 7; i <= 12; i++) {
+            let taxaCalc = m2 + (ant * i);
+            out[i] = taxaCalc;
+            document.getElementById("out" + i + "_manual").value = taxaCalc.toFixed(2);
+        }
+        for (let i = 13; i <= 18; i++) {
+            let taxaCalc = m3 + (ant * i);
+            out[i] = taxaCalc;
+            document.getElementById("out" + i + "_manual").value = taxaCalc.toFixed(2);
+        }
+        // Preenche os fixos manuais para visualização
+        document.getElementById("out_pix_manual").value = out.pix.toFixed(2);
+        document.getElementById("out_debito_manual").value = out.debito.toFixed(2);
+        document.getElementById("out1_manual").value = out[1].toFixed(2);
+
+        // AUTO-EXPANDIR PARA MANUAL/FOTO
+        document.getElementById("radioManual").checked = true;
+        trocarModoOutras();
+    } else {
+        // Se já estiver no manual, apenas lê os valores
         out.pix = parseFloat(document.getElementById("out_pix_manual").value) || 0;
         out.debito = parseFloat(document.getElementById("out_debito_manual").value) || 0;
         out[1] = parseFloat(document.getElementById("out1_manual").value) || 0;
         for (let i = 2; i <= 18; i++) out[i] = parseFloat(document.getElementById("out" + i + "_manual").value) || 0;
-    } else {
-        out.pix = parseFloat(out_pix.value) || 0; out.debito = parseFloat(out_debito.value) || 0;
-        out[1] = parseFloat(out1.value) || 0;
-        let m1 = parseFloat(mdr1.value)||0, m2 = parseFloat(mdr2.value)||0, m3 = parseFloat(mdr3.value)||0, ant = parseFloat(antecipacao.value)||0;
-        for (let i = 2; i <= 6; i++) out[i] = m1 + (ant * (i-1));
-        for (let i = 7; i <= 12; i++) out[i] = m2 + (ant * (i-1));
-        for (let i = 13; i <= 18; i++) out[i] = m3 + (ant * (i-1));
     }
 
+    // Geração da Tabela
     let html = `<table><tr><th>Plano</th><th>Mercado Pago</th><th>Concorrência</th><th>Diferença</th></tr>`;
     let parcelas = ["pix", "debito"];
     for(let i=1; i<=18; i++) parcelas.push(i);
 
     let vitoriasMP = 0;
-
     parcelas.forEach(p => {
         let tMP = (p === "pix") ? mp.pix : (p === "debito" ? mp.debito : mp[p]);
         if (tMP !== null && !isNaN(tMP)) {
             let tOut = (p === "pix") ? out.pix : (p === "debito" ? out.debito : out[p]);
             let nome = p === "pix" ? "Pix" : p === "debito" ? "Débito" : p + "x";
             let dif = (tOut - tMP).toFixed(2);
-            
-            // Blindagem das cores: Azul para vitória do MP, Vermelho para derrota
             let corDiferenca = dif >= 0 ? '#007bff' : 'red';
             if (dif > 0) vitoriasMP++;
-
             html += `<tr><td><b>${nome}</b></td><td class="${tMP > tOut ? 'taxaRuim' : ''}">${tMP.toFixed(2)}%</td><td>${tOut.toFixed(2)}%</td><td style="color:${corDiferenca}"><b>${dif}%</b></td></tr>`;
         }
     });
-
     html += "</table>";
     
-    // Frase do Campeão
     if (vitoriasMP > 0) {
-        html += `<div class="campeao-msg">Mercado Pago Campeão!!! 🏆</div>`;
+        // A frase do campeão continua aqui apenas se você quiser na tabela simples, 
+        // mas sua regra anterior dizia para aparecer na PROJEÇÃO COMPLETA. 
+        // Mantive a lógica da vitória para garantir o funcionamento.
     }
 
     document.getElementById("resultado").innerHTML = html;
@@ -127,8 +149,6 @@ function simularFaturamento() {
     if(f <= 0) return alert("Informe o faturamento mensal.");
 
     let fixos = (parseFloat(fixo_sistema.value)||0) + (parseFloat(fixo_maquina.value)||0) + (parseFloat(fixo_cesta.value)||0) + (parseFloat(fixo_manutencao.value)||0);
-    
-    // Base de economia estratégica
     let ecoTaxas = f * 0.023; 
     if(document.getElementById("check_pix_taxa").checked) {
         let pPix = parseFloat(document.getElementById("share_pix").value) || 0;
@@ -144,7 +164,7 @@ function simularFaturamento() {
         let s = 0;
         for(let i=0; i<m; i++){
             s += res;
-            let r = (s <= 10000) ? s * (cdi * alvo / 1200) : (s <= 100000 ? s * (cdi / 1200) : 100000 * (cdi / 1200));
+            let r = (s <= 10000) ? s * (cdi * alvo / 1200) : (s <= 100000 ? s * (cdi / 1200) : 0);
             s += r;
         }
         return s;
@@ -156,12 +176,12 @@ function simularFaturamento() {
         <div class="resumo-financeiro">
             <h4>💰 Resultados da Consultoria</h4>
             <b>Economia Mensal:</b> R$ ${ecoMes.toFixed(2)}<br>
-            <b>Economia 1 Ano:</b> R$ ${(ecoMes * 12).toFixed(2)}<br>
-            <b>Economia 5 Anos:</b> R$ ${(ecoMes * 60).toFixed(2)}<br><hr>
-            <h4>📈 Projeção de Investimento (Cofrinho)</h4>
+            <b>Economia 1 Ano:</b> R$ ${(ecoMes * 12).toFixed(2)}<br><hr>
+            <h4>📈 Projeção Cofrinho</h4>
             <b>Saldo 1 Ano:</b> R$ ${c1.toFixed(2)}<br>
             <b>Saldo 5 Anos:</b> R$ ${c5.toFixed(2)}
-        </div>`;
+        </div>
+        <div class="campeao-msg">Mercado Pago Campeão!!! 🏆</div>`;
     
     if (window.g) window.g.destroy();
     window.g = new Chart(document.getElementById("graficoEconomia"), {
@@ -185,9 +205,7 @@ function exportarRelatorio(apenasTaxas) {
     } else {
         boxCorpo.style.display = "block"; boxGrafico.style.display = "block";
         boxCorpo.innerHTML = "<h3>Projeção Financeira</h3>" + document.getElementById("resultadoFaturamento").innerHTML;
-        if (window.g) {
-            document.getElementById("img_grafico").src = document.getElementById("graficoEconomia").toDataURL();
-        }
+        if (window.g) document.getElementById("img_grafico").src = document.getElementById("graficoEconomia").toDataURL();
     }
 
     setTimeout(() => {
