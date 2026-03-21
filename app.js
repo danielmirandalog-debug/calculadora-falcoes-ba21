@@ -82,16 +82,33 @@ function simular() {
     let parcelas = ["pix", "debito"];
     for(let i=1; i<=18; i++) parcelas.push(i);
 
+    let vitoriasMP = 0;
+    let totalParcelasComparadas = 0;
+
     parcelas.forEach(p => {
         let tMP = (p === "pix") ? mp.pix : (p === "debito" ? mp.debito : mp[p]);
         if (tMP !== null && !isNaN(tMP)) {
             let tOut = (p === "pix") ? out.pix : (p === "debito" ? out.debito : out[p]);
             let nome = p === "pix" ? "Pix" : p === "debito" ? "Débito" : p + "x";
             let dif = (tOut - tMP).toFixed(2);
-            html += `<tr><td><b>${nome}</b></td><td class="${tMP > tOut ? 'taxaRuim' : ''}">${tMP.toFixed(2)}%</td><td>${tOut.toFixed(2)}%</td><td style="color:${dif >= 0 ? 'green' : 'red'}"><b>${dif}%</b></td></tr>`;
+            
+            // Lógica de cores e contador de vitória
+            let corDiferenca = dif >= 0 ? '#007bff' : 'red'; // Azul para positivo, Vermelho para negativo
+            if (dif > 0) vitoriasMP++;
+            totalParcelasComparadas++;
+
+            html += `<tr><td><b>${nome}</b></td><td class="${tMP > tOut ? 'taxaRuim' : ''}">${tMP.toFixed(2)}%</td><td>${tOut.toFixed(2)}%</td><td style="color:${corDiferenca}"><b>${dif}%</b></td></tr>`;
         }
     });
-    document.getElementById("resultado").innerHTML = html + "</table>";
+
+    html += "</table>";
+    
+    // Adiciona o selo de campeão se o MP ganhar na maioria ou em todas
+    if (vitoriasMP > 0) {
+        html += `<div class="campeao-msg">Mercado Pago Campeão!!! 🏆</div>`;
+    }
+
+    document.getElementById("resultado").innerHTML = html;
     document.getElementById("btnExportarSimples").style.display = "block";
 }
 
@@ -113,7 +130,6 @@ function simularFaturamento() {
 
     let fixos = (parseFloat(fixo_sistema.value)||0) + (parseFloat(fixo_maquina.value)||0) + (parseFloat(fixo_cesta.value)||0) + (parseFloat(fixo_manutencao.value)||0);
     
-    // Cálculo de economia baseado na diferença média de taxas (aprox 2.3% economizados)
     let ecoTaxas = f * 0.023; 
     if(document.getElementById("check_pix_taxa").checked) {
         let pPix = parseFloat(document.getElementById("share_pix").value) || 0;
