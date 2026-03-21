@@ -83,7 +83,6 @@ function simular() {
     for(let i=1; i<=18; i++) parcelas.push(i);
 
     let vitoriasMP = 0;
-    let totalParcelasComparadas = 0;
 
     parcelas.forEach(p => {
         let tMP = (p === "pix") ? mp.pix : (p === "debito" ? mp.debito : mp[p]);
@@ -92,10 +91,9 @@ function simular() {
             let nome = p === "pix" ? "Pix" : p === "debito" ? "Débito" : p + "x";
             let dif = (tOut - tMP).toFixed(2);
             
-            // Lógica de cores e contador de vitória
-            let corDiferenca = dif >= 0 ? '#007bff' : 'red'; // Azul para positivo, Vermelho para negativo
+            // Blindagem das cores: Azul para vitória do MP, Vermelho para derrota
+            let corDiferenca = dif >= 0 ? '#007bff' : 'red';
             if (dif > 0) vitoriasMP++;
-            totalParcelasComparadas++;
 
             html += `<tr><td><b>${nome}</b></td><td class="${tMP > tOut ? 'taxaRuim' : ''}">${tMP.toFixed(2)}%</td><td>${tOut.toFixed(2)}%</td><td style="color:${corDiferenca}"><b>${dif}%</b></td></tr>`;
         }
@@ -103,7 +101,7 @@ function simular() {
 
     html += "</table>";
     
-    // Adiciona o selo de campeão se o MP ganhar na maioria ou em todas
+    // Frase do Campeão
     if (vitoriasMP > 0) {
         html += `<div class="campeao-msg">Mercado Pago Campeão!!! 🏆</div>`;
     }
@@ -130,6 +128,7 @@ function simularFaturamento() {
 
     let fixos = (parseFloat(fixo_sistema.value)||0) + (parseFloat(fixo_maquina.value)||0) + (parseFloat(fixo_cesta.value)||0) + (parseFloat(fixo_manutencao.value)||0);
     
+    // Base de economia estratégica
     let ecoTaxas = f * 0.023; 
     if(document.getElementById("check_pix_taxa").checked) {
         let pPix = parseFloat(document.getElementById("share_pix").value) || 0;
