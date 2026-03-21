@@ -19,12 +19,15 @@
         label { font-size: 12px; font-weight: bold; color: #666; display: block; margin-bottom: 3px; }
         input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
         
-        /* Botões Estilizados */
-        button { width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 8px; background: #FFE600; color: #333; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
+        /* Botões Principais (Amarelos) */
+        button { width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 8px; background: #FFE600; color: #333; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; text-transform: uppercase; }
         button:hover { background: #ffd600; }
-        .btn-limpar { width: auto; padding: 5px 10px; font-size: 10px; background: #f5f5f5; color: #d32f2f; border: 1px solid #ddd; margin: 0; }
-        .btn-exportar { background: #555 !important; color: white !important; }
+        
+        /* Botões de Exportação (Cinza Escuro) */
+        .btn-exportar { background: #555 !important; color: white !important; text-transform: uppercase !important; }
         .btn-exportar:hover { background: #333 !important; }
+
+        .btn-limpar { width: auto; padding: 5px 10px; font-size: 10px; background: #f5f5f5; color: #d32f2f; border: 1px solid #ddd; margin: 0; text-transform: none; }
         
         .grid-taxas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .upload-group { display: flex; gap: 8px; margin: 10px 0; }
@@ -41,7 +44,7 @@
         .check-linha { display: flex; align-items: center; justify-content: flex-start; gap: 8px; margin: 10px 0; background: #fffde7; padding: 12px; border-radius: 8px; border: 1px dashed #ffd600; }
         .check-linha input { width: 18px; height: 18px; margin: 0; cursor: pointer; }
         .check-linha label { margin: 0; cursor: pointer; font-size: 13px; color: #333; display: inline; }
-        .campeao-msg { color: #007bff; font-weight: bold; font-size: 14px; text-align: center; margin-top: 10px; }
+        .campeao-msg { color: #007bff; font-weight: bold; font-size: 14px; text-align: center; margin-top: 15px; }
 
         /* Relatório Oculto */
         #areaRelatorio { position: absolute; left: -9999px; width: 700px; background: white; padding: 40px; color: #333; }
@@ -117,9 +120,9 @@
     </div>
 
     <div class="card">
-        <button onclick="simular()">COMPARAR TAXAS</button>
+        <button onclick="simular()">Comparar Taxas</button>
         <div id="resultado"></div>
-        <button id="btnExportarSimples" class="btn-exportar" onclick="exportarRelatorio(true)" style="display:none;">Exportar Apenas Comparação</button>
+        <button id="btnExportarSimples" class="btn-exportar" onclick="exportarRelatorio(true)" style="display:none; margin-top: 15px;">Exportar Apenas Comparação</button>
     </div>
 
     <div class="card">
@@ -160,13 +163,13 @@
             <span><label>% CDI Alvo (105-140)</label><input id="cofrinho_cdi_alvo" type="number" value="105"></span>
         </div>
 
-        <button onclick="simularFaturamento()">CALCULAR PROJEÇÃO COMPLETA</button>
+        <button onclick="simularFaturamento()">Calcular Projeção Completa</button>
         <div id="resultadoFaturamento"></div>
         <canvas id="graficoEconomia" style="margin-top:20px; max-height: 300px;"></canvas>
     </div>
 
     <div class="card">
-        <button onclick="exportarRelatorio(false)" class="btn-exportar">GERAR RELATÓRIO COMPLETO</button>
+        <button onclick="exportarRelatorio(false)" class="btn-exportar">Gerar Relatório Completo</button>
     </div>
 </div>
 
