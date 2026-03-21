@@ -19,11 +19,9 @@
         label { font-size: 12px; font-weight: bold; color: #666; display: block; margin-bottom: 3px; }
         input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
         
-        /* Botões Principais (Amarelos) */
         button { width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 8px; background: #FFE600; color: #333; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; text-transform: uppercase; }
         button:hover { background: #ffd600; }
         
-        /* Botões de Exportação (Cinza Escuro) */
         .btn-exportar { background: #555 !important; color: white !important; text-transform: uppercase !important; }
         .btn-exportar:hover { background: #333 !important; }
 
@@ -46,7 +44,6 @@
         .check-linha label { margin: 0; cursor: pointer; font-size: 13px; color: #333; display: inline; }
         .campeao-msg { color: #007bff; font-weight: bold; font-size: 14px; text-align: center; margin-top: 15px; }
 
-        /* Relatório Oculto */
         #areaRelatorio { position: absolute; left: -9999px; width: 700px; background: white; padding: 40px; color: #333; }
         .header-rel { text-align: center; border-bottom: 4px solid #FFE600; padding-bottom: 20px; margin-bottom: 25px; }
         .info-cli-rel { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; font-size: 15px; background: #fcfcfc; padding: 20px; border-radius: 10px; border: 1px solid #eee; }
@@ -89,8 +86,8 @@
     <div class="card">
         <h3>Concorrência <button type="button" class="btn-limpar" onclick="limparSecao('out')">Limpar</button></h3>
         <div class="radioLinha">
-            <label><input type="radio" name="modoOutras" value="mdr" checked onchange="trocarModoOutras()"> MDR + Ant.</label>
-            <label><input type="radio" name="modoOutras" value="manual" onchange="trocarModoOutras()"> Manual / Foto</label>
+            <label><input type="radio" id="radioMDR" name="modoOutras" value="mdr" checked onchange="trocarModoOutras()"> MDR + Ant.</label>
+            <label><input type="radio" id="radioManual" name="modoOutras" value="manual" onchange="trocarModoOutras()"> Manual / Foto</label>
         </div>
         
         <div id="modoMDR">
@@ -191,7 +188,7 @@
         </div>
     </div>
     <div class="nota-faloes">
-        <p><b>Notas do Cofrinho:</b> Até R$ 10.000,00 rende o % CDI Alvo. Entre R$ 10.000,01 e R$ 100.000,00 rende 100% do CDI. Acima de R$ 100.000,00 não há rendimento extra.</p>
+        <p><b>Notas do Cofrinho:</b> Até R$ 10.000,00 rende o % CDI Alvo. Entre R$ 10.000,01 e R$ 100.000,00 rende 100% do CDI.</p>
         <p><b>AVISO:</b> Projeção baseada nos dados fornecidos. Sujeito a alteração de taxas vigentes.</p>
     </div>
 </div>
