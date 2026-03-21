@@ -28,6 +28,9 @@
         .btn-limpar { width: auto; padding: 5px 10px; font-size: 10px; background: #f5f5f5; color: #d32f2f; border: 1px solid #ddd; margin: 0; text-transform: none; }
         
         .grid-taxas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        /* Força a antecipação a ocupar uma linha inteira ou ser o último no grid */
+        .full-width { grid-column: span 2; }
+        
         .upload-group { display: flex; gap: 8px; margin: 10px 0; }
         .btn-upload { flex: 1; background: #fcfcfc; border: 2px solid #FFE600; padding: 10px; border-radius: 8px; cursor: pointer; text-align: center; font-size: 12px; color: #555; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 5px; }
         .radioLinha { display: flex; gap: 15px; margin: 10px 0; background: #f9f9f9; padding: 10px; border-radius: 8px; font-size: 14px; }
@@ -36,12 +39,10 @@
         th, td { border: 1px solid #eee; padding: 8px; text-align: center; }
         th { background: #FFF9C4; }
         .taxaRuim { color: #d32f2f; font-weight: bold; }
-        .campeao-msg { color: #007bff; font-weight: bold; font-size: 14px; text-align: center; margin-top: 15px; }
+        .campeao-msg { color: #007bff; font-weight: bold; font-size: 18px; text-align: center; margin-top: 20px; padding: 15px; border: 2px solid #007bff; border-radius: 10px; background: #e3f2fd; }
 
         .barraContainer { width: 100%; height: 10px; background: #eee; border-radius: 5px; overflow: hidden; margin: 10px 0; }
         .barraProgresso { height: 100%; width: 0%; background: #FFE600; transition: 0.4s; }
-        .resumo-financeiro { background:#e3f2fd; padding:15px; border-radius:8px; margin-top:15px; border-left: 5px solid #2196f3; font-size: 14px; line-height: 1.6; }
-
         #areaRelatorio { position: absolute; left: -9999px; width: 700px; background: white; padding: 40px; }
     </style>
 </head>
@@ -53,14 +54,14 @@
     <div class="card">
         <h3>Atendimento <button type="button" class="btn-limpar" onclick="location.reload()">Resetar</button></h3>
         <div class="grid-taxas">
-            <span><label>Empresa</label><input id="input_loja" type="text" placeholder="Ex: Padaria Central"></span>
-            <span><label>Cliente</label><input id="input_cliente" type="text" placeholder="Ex: João Silva"></span>
+            <span><label>Empresa</label><input id="input_loja" type="text" placeholder="Ex: Padaria"></span>
+            <span><label>Cliente</label><input id="input_cliente" type="text" placeholder="Ex: João"></span>
         </div>
         <span><label>Data</label><input id="input_data" type="text" readonly style="background:#f5f5f5"></span>
     </div>
 
     <div class="card">
-        <label>Valor da Venda para Comparação (R$)</label>
+        <label>Valor da Venda (R$)</label>
         <input id="valor" type="number" step="0.01" value="1000.00">
     </div>
 
@@ -86,10 +87,10 @@
                 <span><label>Pix (%)</label> <input id="out_pix" type="number" step="0.01"></span>
                 <span><label>Débito (%)</label> <input id="out_debito" type="number" step="0.01"></span>
                 <span><label>MDR 1x (%)</label> <input id="out_mdr_1x" type="number" step="0.01"></span>
-                <span><label>Ant. Mensal (%)</label> <input id="antecipacao" type="number" step="0.01"></span>
                 <span><label>MDR 2x-6x (%)</label> <input id="mdr_2_6" type="number" step="0.01"></span>
                 <span><label>MDR 7x-13x (%)</label> <input id="mdr_7_13" type="number" step="0.01"></span>
                 <span><label>MDR 14x-18x (%)</label> <input id="mdr_14_18" type="number" step="0.01"></span>
+                <span class="full-width"><label>Antecipação Mensal (%)</label> <input id="antecipacao" type="number" step="0.01"></span>
             </div>
         </div>
 
@@ -110,30 +111,21 @@
     <div class="card">
         <button onclick="simular()">Comparar Taxas</button>
         <div id="resultado"></div>
-        <button id="btnExportarSimples" class="btn-exportar" onclick="exportarRelatorio(true)" style="display:none; margin-top: 15px;">Exportar Apenas Comparação</button>
+        <button id="btnExportarSimples" class="btn-exportar" onclick="exportarRelatorio(true)" style="display:none; margin-top: 15px;">Exportar Comparação</button>
     </div>
 
     <div class="card">
-        <h3>Faturamento e Share <button type="button" class="btn-limpar" onclick="limparSecao('share')">Limpar</button></h3>
+        <h3>Faturamento e Share</h3>
         <div class="barraContainer"><div class="barraProgresso" id="barra"></div></div>
-        <div style="text-align:right; font-weight:bold; font-size:12px;">Total: <span id="contador">0%</span></div>
-        
         <input id="faturamento" type="number" placeholder="Faturamento Mensal (R$)">
-        
         <div class="grid-taxas">
             <span>Pix %: <input id="share_pix" oninput="atualizarBarra()" type="number"></span>
             <span>Débito %: <input id="share_debito" oninput="atualizarBarra()" type="number"></span>
             <span>1x %: <input id="share_1x" oninput="atualizarBarra()" type="number"></span>
             <span>2x-6x %: <input id="share_2_6" oninput="atualizarBarra()" type="number"></span>
-            <span>7x-12x %: <input id="share_7_12" oninput="atualizarBarra()" type="number"></span>
+            <span>7x-13x %: <input id="share_7_13" oninput="atualizarBarra()" type="number"></span>
+            <span>14x-18x %: <input id="share_14_18" oninput="atualizarBarra()" type="number"></span>
         </div>
-
-        <h3 style="margin-top:20px;">Cofrinho</h3>
-        <div class="grid-taxas">
-            <span><label>Aporte Mensal (R$)</label><input id="cofrinho_reserva" type="number"></span>
-            <span><label>% CDI Alvo</label><input id="cofrinho_cdi_alvo" type="number" value="105"></span>
-        </div>
-
         <button onclick="simularFaturamento()">Calcular Projeção Completa</button>
         <div id="resultadoFaturamento"></div>
         <canvas id="graficoEconomia" style="margin-top:20px; max-height: 300px;"></canvas>
