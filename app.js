@@ -1,3 +1,22 @@
+// FUNÇÃO DE ACESSO RESTRITO
+(function() {
+    const senhaCorreta = "123456"; // Escolha sua senha aqui
+    let acesso = localStorage.getItem("acesso_simulador");
+
+    if (acesso !== "permitido") {
+        let tentativa = prompt("Digite a senha de acesso dos Falcões BA21:");
+        
+        if (tentativa === senhaCorreta) {
+            localStorage.setItem("acesso_simulador", "permitido");
+            alert("Acesso autorizado!");
+        } else {
+            alert("Senha incorreta. Acesso negado.");
+            document.body.innerHTML = "<h1 style='text-align:center; margin-top:50px;'>Acesso Restrito.</h1>";
+            window.location.reload(); // Reinicia para pedir a senha de novo
+        }
+    }
+})();
+
 document.addEventListener("DOMContentLoaded", function() {
     gerarInputs();
     buscarCDI();
