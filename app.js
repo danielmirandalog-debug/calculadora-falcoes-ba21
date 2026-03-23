@@ -192,13 +192,14 @@ function simularFaturamento() {
     let c1 = calcCofre(12), c5 = calcCofre(60);
     let msgCampeao = (ecoMes > 0) ? "Mercado Pago Campeão!!! 🏆" : "Concorrência mais rentável neste cenário.";
 
-    document.getElementById("resultadoFaturamento").innerHTML = `
+  document.getElementById("resultadoFaturamento").innerHTML = `
         <div class="resumo-financeiro">
             <h4>💰 Rentabilidade Real Individualizada</h4>
             <b>Custo Operacional MP:</b> R$ ${custoMP.toFixed(2)}<br>
             <b>Custo Operacional Conc.:</b> R$ ${custoConc.toFixed(2)}<br>
             <b>Economia Mensal:</b> <span style="color:${ecoMes > 0 ? '#007bff' : 'red'}">R$ ${ecoMes.toFixed(2)}</span><br>
-            <b>Economia em 1 Ano:</b> R$ ${(ecoMes * 12).toFixed(2)}<br><hr>
+            <b>Economia em 1 Ano:</b> R$ ${(ecoMes * 12).toFixed(2)}<br>
+            <b style="color: #2e7d32;">Economia em 5 Anos: R$ ${(ecoMes * 60).toFixed(2)}</b><br><hr>
             <h4>📈 Projeção Cofrinho</h4>
             <b>Saldo 1 Ano:</b> R$ ${c1.toFixed(2)}<br>
             <b>Saldo 5 Anos:</b> R$ ${c5.toFixed(2)}
