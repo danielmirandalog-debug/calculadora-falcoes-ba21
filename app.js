@@ -52,6 +52,7 @@ function trocarModoOutras() {
     document.getElementById("modoManual").style.display = (m === "manual") ? "block" : "none";
 }
 
+// FUNÇÃO ATUALIZADA COM LÓGICA DE ANTECIPAÇÃO REAL (MODELO DAS FOTOS)
 function simular() {
     let v = parseFloat(document.getElementById("valor").value);
     if (!v) { alert("Informe o valor da venda."); return; }
@@ -69,15 +70,35 @@ function simular() {
         out.pix = parseFloat(out_pix.value) || 0; 
         out.debito = parseFloat(out_debito.value) || 0;
         out[1] = parseFloat(out1.value) || 0;
-        let m1 = parseFloat(mdr1.value)||0, m2 = parseFloat(mdr2.value)||0, m3 = parseFloat(mdr3.value)||0, ant = parseFloat(antecipacao.value)||0;
         
-        for (let i = 2; i <= 6; i++) { let tx = m1 + (ant * i); out[i] = tx; document.getElementById("out" + i + "_manual").value = tx.toFixed(2); }
-        for (let i = 7; i <= 12; i++) { let tx = m2 + (ant * i); out[i] = tx; document.getElementById("out" + i + "_manual").value = tx.toFixed(2); }
-        for (let i = 13; i <= 18; i++) { let tx = m3 + (ant * i); out[i] = tx; document.getElementById("out" + i + "_manual").value = tx.toFixed(2); }
+        let mdr_2_6 = parseFloat(mdr1.value) || 0;
+        let mdr_7_12 = parseFloat(mdr2.value) || 0;
+        let mdr_13_18 = parseFloat(mdr3.value) || 0;
+        let ant_mensal = parseFloat(antecipacao.value) || 0;
+
+        // Cálculo D+1 Real: MDR + (Antecipação * Prazo Médio)
+        // Onde Prazo Médio = (n + 1) / 2
+        for (let i = 2; i <= 6; i++) { 
+            let tx = mdr_2_6 + (ant_mensal * ((i + 1) / 2)); 
+            out[i] = tx; 
+            document.getElementById("out" + i + "_manual").value = tx.toFixed(2); 
+        }
+        for (let i = 7; i <= 12; i++) { 
+            let tx = mdr_7_12 + (ant_mensal * ((i + 1) / 2)); 
+            out[i] = tx; 
+            document.getElementById("out" + i + "_manual").value = tx.toFixed(2); 
+        }
+        for (let i = 13; i <= 18; i++) { 
+            let tx = mdr_13_18 + (ant_mensal * ((i + 1) / 2)); 
+            out[i] = tx; 
+            document.getElementById("out" + i + "_manual").value = tx.toFixed(2); 
+        }
         
         document.getElementById("out_pix_manual").value = out.pix.toFixed(2);
         document.getElementById("out_debito_manual").value = out.debito.toFixed(2);
         document.getElementById("out1_manual").value = out[1].toFixed(2);
+        
+        // Mantém visual e troca modo para permitir conferência manual
         document.getElementById("radioManual").checked = true;
         trocarModoOutras();
     } else {
@@ -87,6 +108,7 @@ function simular() {
         for (let i = 2; i <= 18; i++) out[i] = parseFloat(document.getElementById("out" + i + "_manual").value) || 0;
     }
 
+    // Geração da Tabela de Comparação
     let html = `<table><tr><th>Plano</th><th>Mercado Pago</th><th>Concorrência</th><th>Diferença</th></tr>`;
     let parcelas = ["pix", "debito"];
     for(let i=1; i<=18; i++) parcelas.push(i);
@@ -122,17 +144,16 @@ function simularFaturamento() {
     let f = parseFloat(faturamento.value) || 0;
     if(f <= 0) return alert("Informe o faturamento mensal.");
 
-    // Coleta das Taxas MP e Conc para cruzamento
     const getTaxa = (p, tipo) => {
         let id = (tipo === 'mp') ? (p === 'pix' ? 'mp_pix' : p === 'debito' ? 'mp_debito' : 'mp' + p) : 
                                   (p === 'pix' ? 'out_pix_manual' : p === 'debito' ? 'out_debito_manual' : 'out' + p + '_manual');
-        return parseFloat(document.getElementById(id).value) || 0;
+        let el = document.getElementById(id);
+        return el ? parseFloat(el.value) || 0 : 0;
     };
 
     let custoMP = 0;
     let custoConc = 0;
 
-    // Mapa de Share conforme os IDs de input
     const shareMap = { pix: 'share_pix', debito: 'share_debito', 1: 'share_1x', 2: 'share_2x', 3: 'share_3x', 4: 'share_4x', 6: 'share_6x', 10: 'share_10x' };
 
     Object.keys(shareMap).forEach(p => {
@@ -142,7 +163,6 @@ function simularFaturamento() {
         let taxaMP = getTaxa(p, 'mp');
         let taxaConc = getTaxa(p, 'out');
 
-        // Taxa Extra de Pix 1% na concorrência
         if(p === 'pix' && document.getElementById("check_pix_taxa").checked) {
             taxaConc += 1.00;
         }
@@ -151,7 +171,6 @@ function simularFaturamento() {
         custoConc += valorFatia * (taxaConc / 100);
     });
 
-    // Soma Custos Fixos na Concorrência
     let fixos = (parseFloat(fixo_sistema.value)||0) + (parseFloat(fixo_maquina.value)||0) + (parseFloat(fixo_cesta.value)||0) + (parseFloat(fixo_manutencao.value)||0);
     custoConc += fixos;
 
