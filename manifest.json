@@ -1,1 +1,22 @@
-
+{
+  "short_name": "Falcões BA21",
+  "name": "Falcões da BA21 - Simulador Premium",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "background_color": "#FFFDE7",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#FFE600",
+  "description": "Simulador de taxas e rentabilidade Mercado Pago"
+}
