@@ -67,7 +67,7 @@ function limparSecao(tipo) {
     }
 }
 
-// 3. SIMULAÇÃO DE TAXAS COM LÓGICA DE CORES
+// 3. SIMULAÇÃO DE TAXAS COM LÓGICA DE CORES (DESIGN MELHORADO)
 function simular() {
     let v = parseFloat(document.getElementById("valor").value);
     if (!v) { alert("Informe o valor da venda."); return; }
@@ -87,7 +87,7 @@ function simular() {
         out[i] = parseFloat(document.getElementById("out" + i + "_manual").value) || 0;
     }
 
-    let html = `<table><tr><th>Plano</th><th>Mercado Pago</th><th>Concorrência</th></tr>`;
+    let html = `<table class="tabela-moderna"><tr><th>Plano</th><th>Mercado Pago</th><th>Concorrência</th></tr>`;
     let parcelas = ["pix", "debito"];
     for(let i=1; i<=18; i++) parcelas.push(i);
 
@@ -98,14 +98,13 @@ function simular() {
             let tOut = (p === "pix") ? out.pix : (p === "debito" ? out.debito : out[p]);
             let nome = p === "pix" ? "Pix" : p === "debito" ? "Débito" : p + "x";
             
-            // Lógica de cores: maior taxa fica vermelha
-            let classeMP = tMP > tOut ? 'taxaRuim' : ''; 
+            let classeMP = tMP > tOut ? 'taxaRuim' : 'taxaBoa'; 
             let classeOut = tOut > tMP ? 'taxaRuim' : '';
             
             html += `<tr>
                         <td><b>${nome}</b></td>
-                        <td class="${classeMP}">${tMP.toFixed(2)}%</td>
-                        <td class="${classeOut}">${tOut.toFixed(2)}%</td>
+                        <td class="taxa-destaque ${classeMP}">${tMP.toFixed(2)}%</td>
+                        <td class="taxa-destaque ${classeOut}">${tOut.toFixed(2)}%</td>
                      </tr>`;
         }
     });
@@ -177,12 +176,12 @@ function simularFaturamento() {
 
     document.getElementById("resultadoFaturamento").innerHTML = `
         <div class="resumo-financeiro">
-            <h4>💰 Rentabilidade Real Individualizada</h4>
+            <h4 style="margin-top:0">💰 Rentabilidade Real Individualizada</h4>
             <b>Custo Operacional MP:</b> R$ ${custoMP.toFixed(2)}<br>
             <b>Custo Operacional Conc.:</b> R$ ${custoConc.toFixed(2)}<br>
-            <b>Economia Mensal:</b> <span style="color:${ecoMes > 0 ? '#007bff' : 'red'}">R$ ${ecoMes.toFixed(2)}</span><br>
+            <b>Economia Mensal:</b> <span style="color:${ecoMes > 0 ? '#007bff' : 'red'}; font-size:16px; font-weight:bold">R$ ${ecoMes.toFixed(2)}</span><br>
             <b>Economia em 1 Ano:</b> R$ ${(ecoMes * 12).toFixed(2)}<br>
-            <b style="color: #2e7d32;">Economia em 5 Anos: R$ ${(ecoMes * 60).toFixed(2)}</b><br><hr>
+            <b style="color: #2e7d32; font-size:16px;">Economia em 5 Anos: R$ ${(ecoMes * 60).toFixed(2)}</b><br><hr style="border:0; border-top:1px solid #ccc">
             <h4>📈 Projeção Cofrinho</h4>
             <b>Saldo 1 Ano:</b> R$ ${c1.toFixed(2)}<br>
             <b>Saldo 5 Anos:</b> R$ ${c5.toFixed(2)}
@@ -197,12 +196,12 @@ function simularFaturamento() {
     });
 }
 
-// 5. EXPORTAÇÃO E OCR (ATUALIZADOS)
+// 5. EXPORTAÇÃO E OCR
 function exportarRelatorio(apenasTaxas) {
     document.getElementById("rel_loja").innerText = document.getElementById("input_loja").value || "---";
     document.getElementById("rel_cliente").innerText = document.getElementById("input_cliente").value || "---";
     document.getElementById("rel_data").innerText = document.getElementById("input_data").value;
-    document.getElementById("rel_tabela_taxas").innerHTML = "<h3>Comparativo de Taxas</h3>" + document.getElementById("resultado").innerHTML;
+    document.getElementById("rel_tabela_taxas").innerHTML = "<h3 style='border-bottom:2px solid #FFE600; padding-bottom:10px;'>Comparativo de Taxas</h3>" + document.getElementById("resultado").innerHTML;
     
     let boxCorpo = document.getElementById("rel_share_cofrinho");
     let boxGrafico = document.getElementById("rel_grafico_box");
@@ -234,7 +233,7 @@ function exportarRelatorio(apenasTaxas) {
         boxCorpo.style.display = "none"; boxGrafico.style.display = "none";
     } else {
         boxCorpo.style.display = "block"; boxGrafico.style.display = "block";
-        boxCorpo.innerHTML = "<h3>Rentabilidade e Projeção</h3>" + document.getElementById("resultadoFaturamento").innerHTML;
+        boxCorpo.innerHTML = "<h3 style='border-bottom:2px solid #FFE600; padding-bottom:10px;'>Rentabilidade e Projeção</h3>" + document.getElementById("resultadoFaturamento").innerHTML;
         if (window.g) document.getElementById("img_grafico").src = document.getElementById("graficoEconomia").toDataURL();
     }
 
