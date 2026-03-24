@@ -3,7 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora Premium - Falcões BA21</title>
+    <title>Calculadora de Taxas - Falcões da BA21</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#FFE600">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('App Pronto para Uso!'))
+          .catch(err => console.log('Erro ao registrar app', err));
+      }
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -15,33 +30,38 @@
         .container { max-width: 800px; margin: auto; padding: 15px; }
         .card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 5px solid #FFE600; }
         h3 { margin-top: 0; display: flex; justify-content: space-between; align-items: center; font-size: 17px; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
-        label { font-size: 11px; font-weight: bold; color: #666; display: block; margin-bottom: 2px; }
-        input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
-        button { width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 8px; background: #FFE600; color: #333; font-weight: bold; cursor: pointer; font-size: 16px; text-transform: uppercase; }
-        .btn-exportar { background: #555 !important; color: white !important; margin-top: 15px; }
-        .grid-taxas { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        label { font-size: 12px; font-weight: bold; color: #666; display: block; margin-bottom: 3px; }
+        input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
+        
+        button { width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 8px; background: #FFE600; color: #333; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; text-transform: uppercase; }
+        button:hover { background: #ffd600; }
+        
+        .btn-exportar { background: #555 !important; color: white !important; }
+        .btn-exportar:hover { background: #333 !important; }
+
+        .btn-limpar { width: auto; padding: 5px 10px; font-size: 10px; background: #f5f5f5; color: #d32f2f; border: 1px solid #ddd; margin: 0; text-transform: none; }
+        
+        .grid-taxas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .upload-group { display: flex; gap: 8px; margin: 10px 0; }
         .btn-upload { flex: 1; background: #fcfcfc; border: 2px solid #FFE600; padding: 10px; border-radius: 8px; cursor: pointer; text-align: center; font-size: 12px; color: #555; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        
         .barraContainer { width: 100%; height: 10px; background: #eee; border-radius: 5px; overflow: hidden; margin: 10px 0; }
         .barraProgresso { height: 100%; width: 0%; background: #FFE600; transition: 0.4s; }
+        
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
         th, td { border: 1px solid #eee; padding: 8px; text-align: center; }
         th { background: #FFF9C4; }
-        .taxaRuim { color: #d32f2f; font-weight: bold; background-color: #ffebee !important; }
-        .campeao-msg { color: #2e7d32; font-weight: bold; text-align: center; margin: 15px 0; font-size: 18px; }
-        .resumo-financeiro { background:#e3f2fd; padding:15px; border-radius:8px; margin-top:15px; border-left: 5px solid #2196f3; font-size: 13px; }
+        .taxaRuim { color: #d32f2f; font-weight: bold; }
         
-        /* Estilo para os Checkboxes duplicados */
-        .check-box-container { display: flex; align-items: center; gap: 10px; background: #f1f8e9; padding: 12px; border-radius: 8px; margin: 10px 0; border: 1px solid #c5e1a5; cursor: pointer; font-size: 13px; font-weight: bold; }
-        .check-box-container input { width: auto; margin: 0; transform: scale(1.2); }
+        .resumo-financeiro { background:#e3f2fd; padding:15px; border-radius:8px; margin-top:15px; border-left: 5px solid #2196f3; font-size: 14px; line-height: 1.6; }
+        .pix-app-box { background: #e8f5e9; padding: 12px; border-radius: 8px; border: 1px dashed #4caf50; margin-top: 10px; }
+        .campeao-msg { color: #007bff; font-weight: bold; font-size: 14px; text-align: center; margin-top: 15px; }
 
-        #areaRelatorio { position: absolute; left: -9999px; width: 750px; background: white; padding: 40px; color: #333; }
+        /* Área do Relatório Oculta (para exportação) */
+        #areaRelatorio { position: absolute; left: -9999px; width: 700px; background: white; padding: 40px; color: #333; }
         .header-rel { text-align: center; border-bottom: 4px solid #FFE600; padding-bottom: 20px; margin-bottom: 25px; }
         .info-cli-rel { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; font-size: 15px; background: #fcfcfc; padding: 20px; border-radius: 10px; border: 1px solid #eee; }
-        .beneficios-lista { margin-top: 25px; padding: 25px; background: #f9f9f9; border-radius: 15px; border-left: 8px solid #4CAF50; }
-        .beneficios-lista h3 { color: #2e7d32; font-size: 20px; border: none; margin-bottom: 20px; }
-        .beneficios-lista p { margin: 12px 0; font-size: 16px; line-height: 1.4; color: #444; }
-        .badge-invest { background: #FFE600; padding: 20px; border-radius: 10px; text-align: center; margin-top: 25px; font-weight: bold; border: 3px dashed #333; font-size: 22px; }
+        .nota-faloes { font-size: 12px; color: #555; margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px; text-align: justify; }
     </style>
 </head>
 <body>
@@ -50,16 +70,21 @@
 
 <div class="container">
     <div class="card">
-        <h3>Atendimento <button type="button" style="width:auto; padding:5px 10px; font-size:10px;" onclick="location.reload()">Resetar</button></h3>
+        <h3>Atendimento <button type="button" class="btn-limpar" onclick="location.reload()">Resetar</button></h3>
         <div class="grid-taxas">
-            <span><label>Empresa</label><input id="input_loja" type="text" placeholder="Nome da Loja"></span>
-            <span><label>Cliente</label><input id="input_cliente" type="text" placeholder="Nome do Cliente"></span>
+            <span><label>Empresa</label><input id="input_loja" type="text" placeholder="Ex: Padaria Central"></span>
+            <span><label>Cliente</label><input id="input_cliente" type="text" placeholder="Ex: João Silva"></span>
         </div>
         <span><label>Data</label><input id="input_data" type="text" readonly style="background:#f5f5f5"></span>
     </div>
 
     <div class="card">
-        <h3>Mercado Pago</h3>
+        <label>Valor da Venda para Comparação (R$)</label>
+        <input id="valor" type="number" step="0.01" value="1000.00">
+    </div>
+
+    <div class="card">
+        <h3>Mercado Pago <button type="button" class="btn-limpar" onclick="limparSecao('mp')">Limpar</button></h3>
         <div class="grid-taxas">
             <span><label>Pix (%)</label> <input id="mp_pix" type="number" step="0.01" value="0.49"></span>
             <span><label>Débito (%)</label> <input id="mp_debito" type="number" step="0.01" value="0.99"></span>
@@ -73,72 +98,81 @@
     </div>
 
     <div class="card">
-        <h3>Concorrência</h3>
+        <h3>Concorrência <button type="button" class="btn-limpar" onclick="limparSecao('out')">Limpar</button></h3>
+        <div class="upload-group">
+            <label class="btn-upload"><input type="file" capture="camera" style="display:none" onchange="processarOCR(event, 'out')">📷 Câmera</label>
+            <label class="btn-upload"><input type="file" style="display:none" onchange="processarOCR(event, 'out')">📁 Arquivo</label>
+        </div>
         <div class="grid-taxas">
              <span><label>Pix (%)</label> <input id="out_pix_manual" type="number" step="0.01"></span>
              <span><label>Débito (%)</label> <input id="out_debito_manual" type="number" step="0.01"></span>
              <span><label>Crédito 1x (%)</label> <input id="out1_manual" type="number" step="0.01"></span>
         </div>
-        <div class="upload-group">
-            <label class="btn-upload"><input type="file" capture="camera" style="display:none" onchange="processarOCR(event, 'out')">📷 Câmera</label>
-            <label class="btn-upload"><input type="file" style="display:none" onchange="processarOCR(event, 'out')">📁 Arquivo</label>
-        </div>
         <div id="outrasParcelas" class="grid-taxas"></div>
     </div>
 
     <div class="card">
-        <label>Valor da Venda para Exemplo (R$)</label>
-        <input id="valor" type="number" step="0.01" value="1000.00">
-        
-        <label class="check-box-container">
-            <input type="checkbox" class="sync-check" onchange="sincronizarChecks(this)"> Incluir Benefícios e Infos Adicionais no Relatório
-        </label>
-        
         <button onclick="simular()">Comparar Taxas</button>
         <div id="resultado"></div>
-        <button id="btnExportarSimples" class="btn-exportar" onclick="exportarRelatorio(true)" style="display:none;">Exportar Apenas Taxas</button>
+        <button id="btnExportarSimples" class="btn-exportar" onclick="exportarRelatorio(true)" style="display:none; margin-top: 15px;">Exportar Apenas Comparação</button>
     </div>
 
     <div class="card">
-        <h3>Faturamento e Share</h3>
+        <h3>Faturamento e Share <button type="button" class="btn-limpar" onclick="limparSecao('share')">Limpar</button></h3>
         <div class="barraContainer"><div class="barraProgresso" id="barra"></div></div>
-        <div style="text-align:right; font-weight:bold; font-size:12px;">Total: <span id="contador">0%</span></div>
+        <div style="text-align:right; font-weight:bold; font-size:12px;">Total: <span id="contador">0%</span> (Meta 100%)</div>
         
         <label>Faturamento Mensal Estimado (R$)</label>
-        <input id="faturamento" type="number" step="0.01">
+        <input id="faturamento" type="number" step="0.01" placeholder="0.00">
         
         <div class="grid-taxas">
-            <span>Pix%: <input id="share_pix" oninput="atualizarBarra()" type="number"></span>
-            <span>Débito%: <input id="share_debito" oninput="atualizarBarra()" type="number"></span>
-            <span>1x%: <input id="share_1x" oninput="atualizarBarra()" type="number"></span>
-            <span>2x%: <input id="share_2x" oninput="atualizarBarra()" type="number"></span>
-            <span>3x%: <input id="share_3x" oninput="atualizarBarra()" type="number"></span>
-            <span>4x%: <input id="share_4x" oninput="atualizarBarra()" type="number"></span>
-            <span>6x%: <input id="share_6x" oninput="atualizarBarra()" type="number"></span>
-            <span>10x%: <input id="share_10x" oninput="atualizarBarra()" type="number"></span>
+            <span>Pix %: <input id="share_pix" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>Débito %: <input id="share_debito" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>1x %: <input id="share_1x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>2x %: <input id="share_2x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>3x %: <input id="share_3x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>4x %: <input id="share_4x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>6x %: <input id="share_6x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>10x %: <input id="share_10x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
         </div>
 
-        <h3 style="margin-top:20px;">Custos Fixos Concorrência</h3>
+        <h3 style="margin-top:20px;">Custos Operacionais Concorrência <button type="button" class="btn-limpar" onclick="limparSecao('fixos')">Limpar</button></h3>
         <div class="grid-taxas">
-            <span><label>Cesta Banco</label><input id="fixo_cesta" type="number"></span>
-            <span><label>Manutenção</label><input id="fixo_manutencao" type="number"></span>
-            <span><label>Sistema</label><input id="fixo_sistema" type="number"></span>
-            <span><label>Aluguel Máquina</label><input id="fixo_maquina" type="number"></span>
+            <span><label>Mensalidade Sistema (R$)</label><input id="fixo_sistema" type="number" placeholder="0.00"></span>
+            <span><label>Aluguel Máquina (R$)</label><input id="fixo_maquina" type="number" placeholder="0.00"></span>
+            <span><label>Cesta Serviços (R$)</label><input id="fixo_cesta" type="number" placeholder="0.00"></span>
+            <span><label>Manutenção Conta (R$)</label><input id="fixo_manutencao" type="number" placeholder="0.00"></span>
+        </div>
+        
+        <div class="pix-app-box">
+            <h4 style="margin: 0 0 10px 0; font-size: 13px; color: #2e7d32;">📊 Custo Adicional PIX (Banco do Cliente)</h4>
+            <div class="grid-taxas">
+                <span><label>Volume PIX no App (R$)</label><input id="vol_pix_app" type="number" placeholder="0.00"></span>
+                <span><label>Taxa PIX no App (%)</label><input id="taxa_pix_app" type="number" placeholder="1.00"></span>
+            </div>
         </div>
 
-        <label class="check-box-container">
-            <input type="checkbox" class="sync-check" onchange="sincronizarChecks(this)"> Incluir Benefícios e Infos Adicionais no Relatório
-        </label>
+        <h3 style="margin-top:20px;">Cofrinho <button type="button" class="btn-limpar" onclick="limparSecao('cofrinho')">Limpar</button></h3>
+        <div class="grid-taxas">
+            <span><label>Aporte Mensal (R$)</label><input id="cofrinho_reserva" type="number" placeholder="0.00"></span>
+            <span><label>% CDI Alvo (105-140)</label><input id="cofrinho_cdi_alvo" type="number" value="105"></span>
+        </div>
 
         <button onclick="simularFaturamento()">Calcular Projeção Completa</button>
         <div id="resultadoFaturamento"></div>
-        <canvas id="graficoEconomia" style="margin-top:20px; max-height: 250px;"></canvas>
-        <button onclick="exportarRelatorio(false)" class="btn-exportar">Exportar Relatório Estratégico</button>
+        <canvas id="graficoEconomia" style="margin-top:20px; max-height: 300px;"></canvas>
+    </div>
+
+    <div class="card">
+        <button onclick="exportarRelatorio(false)" class="btn-exportar">Gerar Relatório Completo</button>
     </div>
 </div>
 
 <div id="areaRelatorio">
-    <div class="header-rel"><h1>Falcões da BA21</h1><p>Proposta Estratégica Mercado Pago</p></div>
+    <div class="header-rel">
+        <h1>Falcões da BA21</h1>
+        <p>Proposta Estratégica Mercado Pago</p>
+    </div>
     <div class="info-cli-rel">
         <div><b>Loja:</b> <span id="rel_loja"></span></div>
         <div><b>Data:</b> <span id="rel_data"></span></div>
@@ -146,22 +180,14 @@
     </div>
     <div id="rel_corpo">
         <div id="rel_tabela_taxas"></div>
-        
-        <div id="box_beneficios" class="beneficios-lista" style="display:none;">
-            <h3>Diferenciais e Benefícios Exclusivos:</h3>
-            <p>➡️ <b>Recebimento na HORA (D0):</b> Dinheiro disponível imediatamente na conta 😃</p>
-            <p>➡️ <b>Sem Aluguel:</b> A Máquina é sua! Sem mensalidades fixas ou taxas de adesão escondidas.</p>
-            <p>➡️ <b>Link de Pagamento:</b> Venda através do link com as mesmas condições da máquina física.</p>
-            <p>➡️ <b>Parcelamento em até 18x:</b> Ofereça mais prazo ao seu cliente.</p>
-            <p>➡️ <b>Mesma taxa para todas as Bandeiras:</b> Visa, Mastercard, Elo, Hipercard, American Express.</p>
-            <p>➡️ <b>Sistema de Gestão:</b> Software completo para controle de estoque e vendas (consulte disponibilidade).</p>
-            <p>➡️ <b>Rentabilidade do Cofrinho:</b> Seu saldo rende diariamente.</p>
-            <p>➡️ <b>Cartão Mercado Pago:</b> Cartão gratuito para compras e saques em qualquer banco 24h.</p>
-            <div class="badge-invest">Investimento na Máquina: R$249,90 e até 12x de R$20,83</div>
+        <div id="rel_share_cofrinho" style="margin-top:20px;"></div>
+        <div id="rel_grafico_box" style="text-align:center; margin-top:20px;">
+            <img id="img_grafico" style="max-width:100%; border-radius:10px;">
         </div>
-
-        <div id="rel_financeiro" style="margin-top:20px;"></div>
-        <div id="rel_grafico" style="text-align:center; margin-top:20px;"><img id="img_grafico" style="max-width:100%;"></div>
+    </div>
+    <div class="nota-faloes">
+        <p><b>Notas do Cofrinho:</b> Até R$ 10.000,00 rende o % CDI Alvo. Entre R$ 10.000,01 e R$ 100.000,00 rende 100% do CDI.</p>
+        <p><b>AVISO:</b> Projeção baseada nos dados fornecidos pelo cliente. Sujeito a alteração conforme volume e perfil de faturamento.</p>
     </div>
 </div>
 
