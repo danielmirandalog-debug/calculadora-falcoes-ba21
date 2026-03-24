@@ -11,60 +11,59 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="icon-192.png">
 
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('App Pronto para Uso!'))
-          .catch(err => console.log('Erro ao registrar app', err));
-      }
-    </script>
-
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="app.js" defer></script>
 
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #FFFDE7; margin: 0; color: #333; }
-        header { background: #FFE600; color: #333; padding: 20px; text-align: center; font-size: 22px; font-weight: bold; border-bottom: 3px solid #333; }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #fdfdfd; margin: 0; color: #333; }
+        header { background: #FFE600; color: #333; padding: 25px; text-align: center; font-size: 24px; font-weight: 800; border-bottom: 4px solid #333; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .container { max-width: 800px; margin: auto; padding: 15px; }
-        .card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 5px solid #FFE600; }
-        h3 { margin-top: 0; display: flex; justify-content: space-between; align-items: center; font-size: 17px; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
-        label { font-size: 12px; font-weight: bold; color: #666; display: block; margin-bottom: 3px; }
-        input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
+        .card { background: white; padding: 20px; margin-bottom: 25px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border-top: 6px solid #FFE600; }
         
-        button { width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 8px; background: #FFE600; color: #333; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; text-transform: uppercase; }
-        button:hover { background: #ffd600; }
+        h3 { margin-top: 0; display: flex; justify-content: space-between; align-items: center; font-size: 18px; border-bottom: 1px solid #eee; padding-bottom: 12px; margin-bottom: 15px; color: #444; }
+        label { font-size: 13px; font-weight: bold; color: #777; display: block; margin-bottom: 5px; }
+        input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; transition: 0.3s; }
+        input:focus { border-color: #3483FA; outline: none; box-shadow: 0 0 5px rgba(52, 131, 250, 0.2); }
         
-        .btn-exportar { background: #555 !important; color: white !important; }
-        .btn-exportar:hover { background: #333 !important; }
-        .btn-limpar { width: auto; padding: 5px 10px; font-size: 10px; background: #f5f5f5; color: #d32f2f; border: 1px solid #ddd; margin: 0; text-transform: none; }
+        button { width: 100%; padding: 16px; margin-top: 10px; border: none; border-radius: 12px; background: #FFE600; color: #333; font-weight: 800; cursor: pointer; font-size: 17px; transition: 0.3s; text-transform: uppercase; letter-spacing: 0.5px; }
+        button:hover { background: #ffd600; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        button:active { transform: translateY(0); }
         
-        .grid-taxas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .upload-group { display: flex; gap: 8px; margin: 10px 0; }
-        .btn-upload { flex: 1; background: #fcfcfc; border: 2px solid #FFE600; padding: 10px; border-radius: 8px; cursor: pointer; text-align: center; font-size: 12px; color: #555; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .btn-exportar { background: #333 !important; color: white !important; }
+        .btn-limpar { width: auto; padding: 6px 12px; font-size: 11px; background: #fcfcfc; color: #d32f2f; border: 1px solid #eee; margin: 0; text-transform: none; border-radius: 6px; }
         
-        .checkbox-container { display: flex; align-items: center; gap: 10px; margin: 10px 0; font-size: 14px; font-weight: bold; color: #444; cursor: pointer; }
-        .checkbox-container input { width: 18px; height: 18px; margin: 0; cursor: pointer; }
+        .grid-taxas { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .upload-group { display: flex; gap: 10px; margin: 15px 0; }
+        .btn-upload { flex: 1; background: #fff; border: 2px solid #FFE600; padding: 12px; border-radius: 10px; cursor: pointer; text-align: center; font-size: 13px; color: #333; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn-upload:hover { background: #fffdf0; border-color: #333; }
         
-        .barraContainer { width: 100%; height: 10px; background: #eee; border-radius: 5px; overflow: hidden; margin: 10px 0; }
-        .barraProgresso { height: 100%; width: 0%; background: #FFE600; transition: 0.4s; }
+        .checkbox-container { display: flex; align-items: center; gap: 12px; margin: 15px 0; font-size: 14px; font-weight: 600; color: #555; cursor: pointer; }
+        .checkbox-container input { width: 20px; height: 20px; margin: 0; cursor: pointer; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
-        th, td { border: 1px solid #eee; padding: 8px; text-align: center; }
-        th { background: #FFF9C4; }
-        .taxaRuim { color: #d32f2f; font-weight: bold; }
+        .barraContainer { width: 100%; height: 12px; background: #f0f0f0; border-radius: 6px; overflow: hidden; margin: 15px 0; border: 1px solid #eee; }
+        .barraProgresso { height: 100%; width: 0%; background: #FFE600; transition: 0.6s cubic-bezier(0.17, 0.67, 0.83, 0.67); }
         
-        .resumo-financeiro { background:#e3f2fd; padding:15px; border-radius:8px; margin-top:15px; border-left: 5px solid #2196f3; font-size: 14px; line-height: 1.6; }
-        .pix-app-box { background: #e8f5e9; padding: 12px; border-radius: 8px; border: 1px dashed #4caf50; margin-top: 10px; }
-        .campeao-msg { color: #007bff; font-weight: bold; font-size: 14px; text-align: center; margin-top: 15px; }
+        /* Tabela Estilizada */
+        .tabela-moderna { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        .tabela-moderna th { background: #f9f9f9; padding: 12px; text-align: center; border-bottom: 2px solid #333; color: #666; font-weight: bold; }
+        .tabela-moderna td { padding: 14px; text-align: center; border-bottom: 1px solid #f0f0f0; }
+        .taxa-destaque { font-size: 18px; font-weight: 800; }
+        .taxaBoa { color: #007bff; }
+        .taxaRuim { color: #d32f2f; }
+        
+        .resumo-financeiro { background:#f4f9ff; padding:20px; border-radius:12px; margin-top:15px; border-left: 6px solid #3483FA; font-size: 15px; line-height: 1.8; box-shadow: inset 0 0 10px rgba(0,0,0,0.02); }
+        .pix-app-box { background: #f6fff6; padding: 15px; border-radius: 12px; border: 1px dashed #4caf50; margin-top: 15px; }
+        .campeao-msg { color: #3483FA; font-weight: 900; font-size: 18px; text-align: center; margin-top: 20px; text-transform: uppercase; }
 
-        /* Área do Relatório Oculta */
-        #areaRelatorio { position: absolute; left: -9999px; width: 700px; background: white; padding: 40px; color: #333; }
-        .header-rel { text-align: center; border-bottom: 4px solid #FFE600; padding-bottom: 20px; margin-bottom: 25px; }
-        .info-cli-rel { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; font-size: 15px; background: #fcfcfc; padding: 20px; border-radius: 10px; border: 1px solid #eee; }
-        .info-adicional-rel { background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-top: 15px; font-size: 13px; line-height: 1.5; white-space: pre-line; }
-        .nota-faloes { font-size: 12px; color: #555; margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px; text-align: justify; }
+        /* Área do Relatório Oculta (Design Premium para PNG) */
+        #areaRelatorio { position: absolute; left: -9999px; width: 750px; background: white; padding: 50px; color: #333; }
+        .header-rel { text-align: center; border-bottom: 5px solid #FFE600; padding-bottom: 30px; margin-bottom: 30px; }
+        .header-rel h1 { font-size: 40px; margin: 0; color: #333; letter-spacing: -1px; }
+        .info-cli-rel { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; font-size: 16px; background: #fdfdfd; padding: 25px; border-radius: 15px; border: 1px solid #eee; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .info-adicional-rel { background: #fdfdfd; padding: 25px; border-radius: 12px; border: 1px solid #eee; margin-top: 25px; font-size: 14px; line-height: 1.6; white-space: pre-line; border-left: 5px solid #FFE600; }
+        .nota-faloes { font-size: 12px; color: #777; margin-top: 40px; border-top: 2px solid #eee; padding-top: 25px; text-align: justify; line-height: 1.5; }
     </style>
 </head>
 <body>
@@ -73,17 +72,17 @@
 
 <div class="container">
     <div class="card">
-        <h3>Atendimento <button type="button" class="btn-limpar" onclick="location.reload()">Resetar</button></h3>
+        <h3>Atendimento <button type="button" class="btn-limpar" onclick="location.reload()">Resetar Sistema</button></h3>
         <div class="grid-taxas">
-            <span><label>Empresa</label><input id="input_loja" type="text" placeholder="Ex: Padaria Central"></span>
-            <span><label>Cliente</label><input id="input_cliente" type="text" placeholder="Ex: João Silva"></span>
+            <span><label>Empresa</label><input id="input_loja" type="text" placeholder="Nome da Loja"></span>
+            <span><label>Responsável</label><input id="input_cliente" type="text" placeholder="Nome do Cliente"></span>
         </div>
-        <span><label>Data</label><input id="input_data" type="text" readonly style="background:#f5f5f5"></span>
+        <span><label>Data da Simulação</label><input id="input_data" type="text" readonly style="background:#f9f9f9; color:#999"></span>
     </div>
 
     <div class="card">
-        <label>Valor da Venda para Comparação (R$)</label>
-        <input id="valor" type="number" step="0.01" value="1000.00">
+        <label>Valor para Simulação de Comparativo (R$)</label>
+        <input id="valor" type="number" step="0.01" value="1000.00" style="font-size: 20px; font-weight: bold; color: #3483FA; text-align: center;">
     </div>
 
     <div class="card">
@@ -103,9 +102,9 @@
     <div class="card">
         <h3>Concorrência <button type="button" class="btn-limpar" onclick="limparSecao('out')">Limpar</button></h3>
         <div class="grid-taxas">
-             <span><label>Pix (%)</label> <input id="out_pix_manual" type="number" step="0.01"></span>
-             <span><label>Débito (%)</label> <input id="out_debito_manual" type="number" step="0.01"></span>
-             <span><label>Crédito 1x (%)</label> <input id="out1_manual" type="number" step="0.01"></span>
+             <span><label>Pix (%)</label> <input id="out_pix_manual" type="number" step="0.01" placeholder="0.00"></span>
+             <span><label>Débito (%)</label> <input id="out_debito_manual" type="number" step="0.01" placeholder="0.00"></span>
+             <span><label>Crédito 1x (%)</label> <input id="out1_manual" type="number" step="0.01" placeholder="0.00"></span>
         </div>
         <div class="upload-group">
             <label class="btn-upload"><input type="file" capture="camera" style="display:none" onchange="processarOCR(event, 'out')">📷 Câmera</label>
@@ -115,89 +114,89 @@
     </div>
 
     <div class="card">
-        <button onclick="simular()">Comparar Taxas</button>
+        <button onclick="simular()">Comparar Taxas Agora</button>
         <div id="resultado"></div>
         <label class="checkbox-container">
-            <input type="checkbox" id="chk_info_simples"> Inserir informações adicionais ao arquivo de taxas
+            <input type="checkbox" id="chk_info_simples"> Inserir Termos e Condições no arquivo
         </label>
-        <button id="btnExportarSimples" class="btn-exportar" onclick="exportarRelatorio(true)" style="display:none; margin-top: 10px;">Exportar Apenas Comparação</button>
+        <button id="btnExportarSimples" class="btn-exportar" onclick="exportarRelatorio(true)" style="display:none;">Exportar Apenas Taxas</button>
     </div>
 
     <div class="card">
-        <h3>Faturamento e Share <button type="button" class="btn-limpar" onclick="limparSecao('share')">Limpar</button></h3>
+        <h3>Volume e Share de Vendas <button type="button" class="btn-limpar" onclick="limparSecao('share')">Limpar</button></h3>
         <div class="barraContainer"><div class="barraProgresso" id="barra"></div></div>
-        <div style="text-align:right; font-weight:bold; font-size:12px;">Total: <span id="contador">0%</span> (Meta 100%)</div>
+        <div style="text-align:right; font-weight:bold; font-size:13px; color:#555;">Progresso: <span id="contador">0%</span> (Meta 100%)</div>
         
         <label>Faturamento Mensal Estimado (R$)</label>
-        <input id="faturamento" type="number" step="0.01" placeholder="0.00">
+        <input id="faturamento" type="number" step="0.01" placeholder="Ex: 50000.00">
         
         <div class="grid-taxas">
-            <span>Pix %: <input id="share_pix" oninput="atualizarBarra()" type="number" placeholder="0"></span>
-            <span>Débito %: <input id="share_debito" oninput="atualizarBarra()" type="number" placeholder="0"></span>
-            <span>1x %: <input id="share_1x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
-            <span>2x %: <input id="share_2x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
-            <span>3x %: <input id="share_3x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
-            <span>4x %: <input id="share_4x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
-            <span>6x %: <input id="share_6x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
-            <span>10x %: <input id="share_10x" oninput="atualizarBarra()" type="number" placeholder="0"></span>
+            <span>Pix %: <input id="share_pix" oninput="atualizarBarra()" type="number"></span>
+            <span>Débito %: <input id="share_debito" oninput="atualizarBarra()" type="number"></span>
+            <span>1x %: <input id="share_1x" oninput="atualizarBarra()" type="number"></span>
+            <span>2x %: <input id="share_2x" oninput="atualizarBarra()" type="number"></span>
+            <span>3x %: <input id="share_3x" oninput="atualizarBarra()" type="number"></span>
+            <span>4x %: <input id="share_4x" oninput="atualizarBarra()" type="number"></span>
+            <span>6x %: <input id="share_6x" oninput="atualizarBarra()" type="number"></span>
+            <span>10x %: <input id="share_10x" oninput="atualizarBarra()" type="number"></span>
         </div>
 
-        <h3 style="margin-top:20px;">Custos Operacionais Concorrência <button type="button" class="btn-limpar" onclick="limparSecao('fixos')">Limpar</button></h3>
+        <h3 style="margin-top:25px;">Custos Ocultos Concorrência <button type="button" class="btn-limpar" onclick="limparSecao('fixos')">Limpar</button></h3>
         <div class="grid-taxas">
-            <span><label>Mensalidade Sistema (R$)</label><input id="fixo_sistema" type="number" placeholder="0.00"></span>
-            <span><label>Aluguel Máquina (R$)</label><input id="fixo_maquina" type="number" placeholder="0.00"></span>
-            <span><label>Cesta Serviços (R$)</label><input id="fixo_cesta" type="number" placeholder="0.00"></span>
-            <span><label>Manutenção Conta (R$)</label><input id="fixo_manutencao" type="number" placeholder="0.00"></span>
+            <span><label>Mensalidade (R$)</label><input id="fixo_sistema" type="number"></span>
+            <span><label>Aluguel (R$)</label><input id="fixo_maquina" type="number"></span>
+            <span><label>Cesta Banco (R$)</label><input id="fixo_cesta" type="number"></span>
+            <span><label>Manutenção (R$)</label><input id="fixo_manutencao" type="number"></span>
         </div>
         
         <div class="pix-app-box">
-            <h4 style="margin: 0 0 10px 0; font-size: 13px; color: #2e7d32;">📊 Custo Adicional PIX (Banco do Cliente)</h4>
+            <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #2e7d32; display: flex; align-items: center; gap: 5px;">📊 Custos Extras PIX (App Bancário)</h4>
             <div class="grid-taxas">
-                <span><label>Volume PIX no App (R$)</label><input id="vol_pix_app" type="number" placeholder="0.00"></span>
-                <span><label>Taxa PIX no App (%)</label><input id="taxa_pix_app" type="number" placeholder="0.00"></span>
+                <span><label>Vol. PIX no App (R$)</label><input id="vol_pix_app" type="number"></span>
+                <span><label>Taxa PIX no App (%)</label><input id="taxa_pix_app" type="number"></span>
             </div>
         </div>
 
-        <h3 style="margin-top:20px;">Cofrinho <button type="button" class="btn-limpar" onclick="limparSecao('cofrinho')">Limpar</button></h3>
+        <h3 style="margin-top:25px;">Estratégia Cofrinho <button type="button" class="btn-limpar" onclick="limparSecao('cofrinho')">Limpar</button></h3>
         <div class="grid-taxas">
-            <span><label>Aporte Mensal (R$)</label><input id="cofrinho_reserva" type="number" placeholder="0.00"></span>
-            <span><label>% CDI Alvo (105-140)</label><input id="cofrinho_cdi_alvo" type="number" value="105"></span>
+            <span><label>Aporte Mensal (R$)</label><input id="cofrinho_reserva" type="number"></span>
+            <span><label>% CDI (Ex: 105)</label><input id="cofrinho_cdi_alvo" type="number" value="105"></span>
         </div>
 
-        <button onclick="simularFaturamento()">Calcular Projeção Completa</button>
+        <button onclick="simularFaturamento()">Gerar Estudo de Rentabilidade</button>
         <div id="resultadoFaturamento"></div>
         <canvas id="graficoEconomia" style="margin-top:20px; max-height: 300px;"></canvas>
     </div>
 
     <div class="card">
         <label class="checkbox-container">
-            <input type="checkbox" id="chk_info_completo"> Inserir informações adicionais ao arquivo de taxas
+            <input type="checkbox" id="chk_info_completo"> Incluir Termos e Informações Adicionais
         </label>
-        <button onclick="exportarRelatorio(false)" class="btn-exportar">Gerar Relatório Completo</button>
+        <button onclick="exportarRelatorio(false)" class="btn-exportar">Exportar Relatório Estratégico Completo</button>
     </div>
 </div>
 
 <div id="areaRelatorio">
     <div class="header-rel">
         <h1>Falcões da BA21</h1>
-        <p>Proposta Estratégica Mercado Pago</p>
+        <p style="font-size: 18px; color: #666; font-weight: bold;">Proposta Estratégica de Redução de Custos</p>
     </div>
     <div class="info-cli-rel">
-        <div><b>Loja:</b> <span id="rel_loja"></span></div>
-        <div><b>Data:</b> <span id="rel_data"></span></div>
-        <div><b>Responsável:</b> <span id="rel_cliente"></span></div>
+        <div><b>Loja/Empresa:</b> <br><span id="rel_loja" style="font-size: 20px; font-weight: 800; color: #3483FA;"></span></div>
+        <div><b>Data:</b> <br><span id="rel_data"></span></div>
+        <div><b>Responsável:</b> <br><span id="rel_cliente" style="font-size: 18px; font-weight: 600;"></span></div>
     </div>
     <div id="rel_corpo">
         <div id="rel_tabela_taxas"></div>
-        <div id="rel_share_cofrinho" style="margin-top:20px;"></div>
-        <div id="rel_grafico_box" style="text-align:center; margin-top:20px;">
-            <img id="img_grafico" style="max-width:100%; border-radius:10px;">
+        <div id="rel_share_cofrinho" style="margin-top:25px;"></div>
+        <div id="rel_grafico_box" style="text-align:center; margin-top:25px;">
+            <img id="img_grafico" style="max-width:100%; border-radius:15px; border: 1px solid #eee;">
         </div>
     </div>
     <div id="rel_info_adicional" class="info-adicional-rel" style="display:none;"></div>
     <div class="nota-faloes">
-        <p><b>Notas do Cofrinho:</b> Até R$ 10.000,00 rende o % CDI Alvo. Entre R$ 10.000,01 e R$ 100.000,00 rende 100% do CDI.</p>
-        <p><b>AVISO:</b> Projeção de taxas baseada nos dados disponíveis pelo Mercado Pago no ato da simulação e dados fornecidos pelo cliente. Sujeito a alteração sem aviso prévio.</p>
+        <p><b>Sobre o Cofrinho:</b> Projeção baseada em aportes mensais fixos. Até R$ 10.000,00 rende o percentual alvo do CDI. Acima desse valor, o rendimento segue a regra de 100% do CDI.</p>
+        <p><b>Nota Importante:</b> Esta simulação é uma ferramenta de apoio à decisão baseada nas taxas informadas e nas tabelas vigentes do Mercado Pago na data de emissão. Sujeito a análise de perfil e alterações sem aviso prévio.</p>
     </div>
 </div>
 
