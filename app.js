@@ -67,7 +67,7 @@ function limparSecao(tipo) {
     }
 }
 
-// 3. SIMULAÇÃO DE TAXAS (SEM COLUNA DIFERENÇA)
+// 3. SIMULAÇÃO DE TAXAS COM LÓGICA DE CORES
 function simular() {
     let v = parseFloat(document.getElementById("valor").value);
     if (!v) { alert("Informe o valor da venda."); return; }
@@ -98,7 +98,7 @@ function simular() {
             let tOut = (p === "pix") ? out.pix : (p === "debito" ? out.debito : out[p]);
             let nome = p === "pix" ? "Pix" : p === "debito" ? "Débito" : p + "x";
             
-            // Lógica de destaque: quem for maior fica vermelho/negrito
+            // Lógica de cores: maior taxa fica vermelha
             let classeMP = tMP > tOut ? 'taxaRuim' : ''; 
             let classeOut = tOut > tMP ? 'taxaRuim' : '';
             
@@ -122,7 +122,7 @@ function atualizarBarra() {
     document.getElementById("barra").style.background = (Math.round(soma) === 100) ? "#4CAF50" : "#FFE600";
 }
 
-// 4. SIMULAÇÃO DE FATURAMENTO COM NOVA LÓGICA DE PIX APP
+// 4. SIMULAÇÃO DE FATURAMENTO
 function simularFaturamento() {
     let soma = 0;
     IDs_SHARE.forEach(id => soma += parseFloat(document.getElementById(id).value) || 0);
@@ -149,7 +149,6 @@ function simularFaturamento() {
         custoConc += valorFatia * (getTaxa(p, 'out') / 100);
     });
 
-    // CÁLCULO DE CUSTOS FIXOS + PIX APP (NOVA LÓGICA)
     let fixosGerais = (parseFloat(fixo_sistema.value)||0) + (parseFloat(fixo_maquina.value)||0) + (parseFloat(fixo_cesta.value)||0) + (parseFloat(fixo_manutencao.value)||0);
     
     let volPixApp = parseFloat(document.getElementById("vol_pix_app").value) || 0;
@@ -198,7 +197,7 @@ function simularFaturamento() {
     });
 }
 
-// 5. EXPORTAÇÃO E OCR (MANTIDOS)
+// 5. EXPORTAÇÃO E OCR (ATUALIZADOS)
 function exportarRelatorio(apenasTaxas) {
     document.getElementById("rel_loja").innerText = document.getElementById("input_loja").value || "---";
     document.getElementById("rel_cliente").innerText = document.getElementById("input_cliente").value || "---";
@@ -207,6 +206,29 @@ function exportarRelatorio(apenasTaxas) {
     
     let boxCorpo = document.getElementById("rel_share_cofrinho");
     let boxGrafico = document.getElementById("rel_grafico_box");
+    let boxInfoAdicional = document.getElementById("rel_info_adicional");
+
+    const textoAdicional = `<b>Informações adicionais:</b>
+➡️ Máquina sem aluguel
+➡️ Conta sem anuidade e sem taxas administrativas
+➡️ Link de pagamento com recebimento na hora e com as mesmas condições de taxas da máquina
+➡️ Parcelamento até 18x
+➡️ Mesma taxa para todas as bandeiras (Visa, Master, Elo, Hipercard, Amex, Diners)
+➡️ Todos valores entram na hora na conta, mesmo em feriado e final de semana, ou seja: PASSOU O CARTAO, RECEBIMENTO IMEDIATO 😃
+➡️ Rendimentos diários na conta através do nosso cofrinho
+➡️ Fácil acesso ao App
+➡️ NOVIDADE: Software de gestão completo para o seu negócio (consulte condições)
+
+🗒️Simulação com validade de 07 dias, a contar da data de recebimento desse.`;
+
+    let checkboxAtivo = apenasTaxas ? document.getElementById("chk_info_simples") : document.getElementById("chk_info_completo");
+    
+    if (checkboxAtivo.checked) {
+        boxInfoAdicional.style.display = "block";
+        boxInfoAdicional.innerHTML = textoAdicional;
+    } else {
+        boxInfoAdicional.style.display = "none";
+    }
 
     if (apenasTaxas) {
         boxCorpo.style.display = "none"; boxGrafico.style.display = "none";
