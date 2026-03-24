@@ -97,16 +97,16 @@
         <div id="mpParcelas" class="grid-taxas"></div>
     </div>
 
-    <div class="card">
+<div class="card">
         <h3>Concorrência <button type="button" class="btn-limpar" onclick="limparSecao('out')">Limpar</button></h3>
-        <div class="upload-group">
-            <label class="btn-upload"><input type="file" capture="camera" style="display:none" onchange="processarOCR(event, 'out')">📷 Câmera</label>
-            <label class="btn-upload"><input type="file" style="display:none" onchange="processarOCR(event, 'out')">📁 Arquivo</label>
-        </div>
         <div class="grid-taxas">
              <span><label>Pix (%)</label> <input id="out_pix_manual" type="number" step="0.01"></span>
              <span><label>Débito (%)</label> <input id="out_debito_manual" type="number" step="0.01"></span>
              <span><label>Crédito 1x (%)</label> <input id="out1_manual" type="number" step="0.01"></span>
+        </div>
+        <div class="upload-group">
+            <label class="btn-upload"><input type="file" capture="camera" style="display:none" onchange="processarOCR(event, 'out')">📷 Câmera</label>
+            <label class="btn-upload"><input type="file" style="display:none" onchange="processarOCR(event, 'out')">📁 Arquivo</label>
         </div>
         <div id="outrasParcelas" class="grid-taxas"></div>
     </div>
