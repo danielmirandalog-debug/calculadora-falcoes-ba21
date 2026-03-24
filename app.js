@@ -1,22 +1,22 @@
-// FUNÇÃO DE ACESSO RESTRITO
+// 1. BLOQUEIO DE ACESSO RESTRITO
 (function() {
-    const senhaCorreta = "123456"; // Escolha sua senha aqui
+    const senhaCorreta = "123456"; 
     let acesso = localStorage.getItem("acesso_simulador");
 
     if (acesso !== "permitido") {
         let tentativa = prompt("Digite a senha de acesso dos Falcões BA21:");
-        
         if (tentativa === senhaCorreta) {
             localStorage.setItem("acesso_simulador", "permitido");
             alert("Acesso autorizado!");
         } else {
             alert("Senha incorreta. Acesso negado.");
             document.body.innerHTML = "<h1 style='text-align:center; margin-top:50px;'>Acesso Restrito.</h1>";
-            window.location.reload(); // Reinicia para pedir a senha de novo
+            window.location.reload();
         }
     }
 })();
 
+// 2. INICIALIZAÇÃO
 document.addEventListener("DOMContentLoaded", function() {
     gerarInputs();
     buscarCDI();
@@ -45,11 +45,12 @@ async function buscarCDI() {
 
 function limparSecao(tipo) {
     if (tipo === 'mp') {
-        document.getElementById("mp_pix").value = "0.49"; document.getElementById("mp_debito").value = "0.99";
+        document.getElementById("mp_pix").value = "0.49"; 
+        document.getElementById("mp_debito").value = "0.99";
         document.getElementById("mp1").value = "3.05";
         document.querySelectorAll(".input-mp").forEach(i => i.value = "");
     } else if (tipo === 'out') {
-        ["out_pix","out_debito","out1","mdr1","mdr2","mdr3","antecipacao","out_pix_manual","out_debito_manual","out1_manual"].forEach(id => {
+        ["out_pix_manual","out_debito_manual","out1_manual"].forEach(id => {
             if(document.getElementById(id)) document.getElementById(id).value = "";
         });
         document.querySelectorAll(".input-out").forEach(i => i.value = "");
@@ -57,21 +58,16 @@ function limparSecao(tipo) {
         IDs_SHARE.forEach(id => document.getElementById(id).value = "");
         atualizarBarra();
     } else if (tipo === 'fixos') {
-        ["fixo_sistema","fixo_maquina","fixo_cesta","fixo_manutencao"].forEach(id => document.getElementById(id).value = "");
-        document.getElementById("check_pix_taxa").checked = false;
+        ["fixo_sistema","fixo_maquina","fixo_cesta","fixo_manutencao","vol_pix_app","taxa_pix_app"].forEach(id => {
+            if(document.getElementById(id)) document.getElementById(id).value = "";
+        });
     } else if (tipo === 'cofrinho') {
         document.getElementById("cofrinho_reserva").value = "";
         document.getElementById("cofrinho_cdi_alvo").value = "105";
     }
 }
 
-function trocarModoOutras() {
-    let m = document.querySelector('input[name="modoOutras"]:checked').value;
-    document.getElementById("modoMDR").style.display = (m === "mdr") ? "block" : "none";
-    document.getElementById("modoManual").style.display = (m === "manual") ? "block" : "none";
-}
-
-// FUNÇÃO ATUALIZADA COM LÓGICA DE ANTECIPAÇÃO REAL (MODELO DAS FOTOS)
+// 3. SIMULAÇÃO DE TAXAS (SEM COLUNA DIFERENÇA)
 function simular() {
     let v = parseFloat(document.getElementById("valor").value);
     if (!v) { alert("Informe o valor da venda."); return; }
@@ -82,53 +78,16 @@ function simular() {
         mp[i] = (val === "" || isNaN(val)) ? null : parseFloat(val);
     }
 
-    let out = {};
-    let modo = document.querySelector('input[name="modoOutras"]:checked').value;
-
-    if (modo === "mdr") {
-        out.pix = parseFloat(out_pix.value) || 0; 
-        out.debito = parseFloat(out_debito.value) || 0;
-        out[1] = parseFloat(out1.value) || 0;
-        
-        let mdr_2_6 = parseFloat(mdr1.value) || 0;
-        let mdr_7_12 = parseFloat(mdr2.value) || 0;
-        let mdr_13_18 = parseFloat(mdr3.value) || 0;
-        let ant_mensal = parseFloat(antecipacao.value) || 0;
-
-        // Cálculo D+1 Real: MDR + (Antecipação * Prazo Médio)
-        // Onde Prazo Médio = (n + 1) / 2
-        for (let i = 2; i <= 6; i++) { 
-            let tx = mdr_2_6 + (ant_mensal * ((i + 1) / 2)); 
-            out[i] = tx; 
-            document.getElementById("out" + i + "_manual").value = tx.toFixed(2); 
-        }
-        for (let i = 7; i <= 12; i++) { 
-            let tx = mdr_7_12 + (ant_mensal * ((i + 1) / 2)); 
-            out[i] = tx; 
-            document.getElementById("out" + i + "_manual").value = tx.toFixed(2); 
-        }
-        for (let i = 13; i <= 18; i++) { 
-            let tx = mdr_13_18 + (ant_mensal * ((i + 1) / 2)); 
-            out[i] = tx; 
-            document.getElementById("out" + i + "_manual").value = tx.toFixed(2); 
-        }
-        
-        document.getElementById("out_pix_manual").value = out.pix.toFixed(2);
-        document.getElementById("out_debito_manual").value = out.debito.toFixed(2);
-        document.getElementById("out1_manual").value = out[1].toFixed(2);
-        
-        // Mantém visual e troca modo para permitir conferência manual
-        document.getElementById("radioManual").checked = true;
-        trocarModoOutras();
-    } else {
-        out.pix = parseFloat(document.getElementById("out_pix_manual").value) || 0;
-        out.debito = parseFloat(document.getElementById("out_debito_manual").value) || 0;
-        out[1] = parseFloat(document.getElementById("out1_manual").value) || 0;
-        for (let i = 2; i <= 18; i++) out[i] = parseFloat(document.getElementById("out" + i + "_manual").value) || 0;
+    let out = {
+        pix: parseFloat(document.getElementById("out_pix_manual").value) || 0,
+        debito: parseFloat(document.getElementById("out_debito_manual").value) || 0,
+        1: parseFloat(document.getElementById("out1_manual").value) || 0
+    };
+    for (let i = 2; i <= 18; i++) {
+        out[i] = parseFloat(document.getElementById("out" + i + "_manual").value) || 0;
     }
 
-    // Geração da Tabela de Comparação
-    let html = `<table><tr><th>Plano</th><th>Mercado Pago</th><th>Concorrência</th><th>Diferença</th></tr>`;
+    let html = `<table><tr><th>Plano</th><th>Mercado Pago</th><th>Concorrência</th></tr>`;
     let parcelas = ["pix", "debito"];
     for(let i=1; i<=18; i++) parcelas.push(i);
 
@@ -137,9 +96,9 @@ function simular() {
         if (tMP !== null && !isNaN(tMP)) {
             let tOut = (p === "pix") ? out.pix : (p === "debito" ? out.debito : out[p]);
             let nome = p === "pix" ? "Pix" : p === "debito" ? "Débito" : p + "x";
-            let dif = (tOut - tMP).toFixed(2);
-            let corDiferenca = dif >= 0 ? '#007bff' : 'red';
-            html += `<tr><td><b>${nome}</b></td><td class="${tMP > tOut ? 'taxaRuim' : ''}">${tMP.toFixed(2)}%</td><td>${tOut.toFixed(2)}%</td><td style="color:${corDiferenca}"><b>${dif}%</b></td></tr>`;
+            // Destaque visual mantido para facilitar a venda
+            let classeMP = tMP > tOut ? 'taxaRuim' : ''; 
+            html += `<tr><td><b>${nome}</b></td><td class="${classeMP}">${tMP.toFixed(2)}%</td><td>${tOut.toFixed(2)}%</td></tr>`;
         }
     });
     html += "</table>";
@@ -155,6 +114,7 @@ function atualizarBarra() {
     document.getElementById("barra").style.background = (Math.round(soma) === 100) ? "#4CAF50" : "#FFE600";
 }
 
+// 4. SIMULAÇÃO DE FATURAMENTO COM NOVA LÓGICA DE PIX APP
 function simularFaturamento() {
     let soma = 0;
     IDs_SHARE.forEach(id => soma += parseFloat(document.getElementById(id).value) || 0);
@@ -172,26 +132,23 @@ function simularFaturamento() {
 
     let custoMP = 0;
     let custoConc = 0;
-
     const shareMap = { pix: 'share_pix', debito: 'share_debito', 1: 'share_1x', 2: 'share_2x', 3: 'share_3x', 4: 'share_4x', 6: 'share_6x', 10: 'share_10x' };
 
     Object.keys(shareMap).forEach(p => {
         let percShare = parseFloat(document.getElementById(shareMap[p]).value) || 0;
         let valorFatia = f * (percShare / 100);
-        
-        let taxaMP = getTaxa(p, 'mp');
-        let taxaConc = getTaxa(p, 'out');
-
-        if(p === 'pix' && document.getElementById("check_pix_taxa").checked) {
-            taxaConc += 1.00;
-        }
-
-        custoMP += valorFatia * (taxaMP / 100);
-        custoConc += valorFatia * (taxaConc / 100);
+        custoMP += valorFatia * (getTaxa(p, 'mp') / 100);
+        custoConc += valorFatia * (getTaxa(p, 'out') / 100);
     });
 
-    let fixos = (parseFloat(fixo_sistema.value)||0) + (parseFloat(fixo_maquina.value)||0) + (parseFloat(fixo_cesta.value)||0) + (parseFloat(fixo_manutencao.value)||0);
-    custoConc += fixos;
+    // CÁLCULO DE CUSTOS FIXOS + PIX APP (NOVA LÓGICA)
+    let fixosGerais = (parseFloat(fixo_sistema.value)||0) + (parseFloat(fixo_maquina.value)||0) + (parseFloat(fixo_cesta.value)||0) + (parseFloat(fixo_manutencao.value)||0);
+    
+    let volPixApp = parseFloat(document.getElementById("vol_pix_app").value) || 0;
+    let taxaPixApp = parseFloat(document.getElementById("taxa_pix_app").value) || 0;
+    let custoPixExtra = volPixApp * (taxaPixApp / 100);
+
+    custoConc += (fixosGerais + custoPixExtra);
 
     let ecoMes = custoConc - custoMP;
     let res = parseFloat(cofrinho_reserva.value) || 0;
@@ -209,9 +166,9 @@ function simularFaturamento() {
     };
 
     let c1 = calcCofre(12), c5 = calcCofre(60);
-    let msgCampeao = (ecoMes > 0) ? "Mercado Pago Campeão!!! 🏆" : "Concorrência mais rentável neste cenário.";
+    let msgCampeao = (ecoMes > 0) ? "Mercado Pago Campeão!!! 🏆" : "Concorrência mais rentável.";
 
-  document.getElementById("resultadoFaturamento").innerHTML = `
+    document.getElementById("resultadoFaturamento").innerHTML = `
         <div class="resumo-financeiro">
             <h4>💰 Rentabilidade Real Individualizada</h4>
             <b>Custo Operacional MP:</b> R$ ${custoMP.toFixed(2)}<br>
@@ -233,6 +190,7 @@ function simularFaturamento() {
     });
 }
 
+// 5. EXPORTAÇÃO E OCR (MANTIDOS)
 function exportarRelatorio(apenasTaxas) {
     document.getElementById("rel_loja").innerText = document.getElementById("input_loja").value || "---";
     document.getElementById("rel_cliente").innerText = document.getElementById("input_cliente").value || "---";
