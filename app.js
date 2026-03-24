@@ -93,12 +93,20 @@ function simular() {
 
     parcelas.forEach(p => {
         let tMP = (p === "pix") ? mp.pix : (p === "debito" ? mp.debito : mp[p]);
+        
         if (tMP !== null && !isNaN(tMP)) {
             let tOut = (p === "pix") ? out.pix : (p === "debito" ? out.debito : out[p]);
             let nome = p === "pix" ? "Pix" : p === "debito" ? "Débito" : p + "x";
-            // Destaque visual mantido para facilitar a venda
+            
+            // Lógica de destaque: quem for maior fica vermelho/negrito
             let classeMP = tMP > tOut ? 'taxaRuim' : ''; 
-            html += `<tr><td><b>${nome}</b></td><td class="${classeMP}">${tMP.toFixed(2)}%</td><td>${tOut.toFixed(2)}%</td></tr>`;
+            let classeOut = tOut > tMP ? 'taxaRuim' : '';
+            
+            html += `<tr>
+                        <td><b>${nome}</b></td>
+                        <td class="${classeMP}">${tMP.toFixed(2)}%</td>
+                        <td class="${classeOut}">${tOut.toFixed(2)}%</td>
+                     </tr>`;
         }
     });
     html += "</table>";
