@@ -52,12 +52,11 @@
         .taxaRuim { color: #d32f2f; }
         
         .resumo-financeiro { background:#f4f9ff; padding:20px; border-radius:12px; margin-top:15px; border-left: 6px solid #3483FA; font-size: 15px; line-height: 1.8; }
-        .pix-app-box { background: #f6fff6; padding: 15px; border-radius: 12px; border: 1px dashed #4caf50; margin-top: 15px; }
         .campeao-msg { color: #3483FA; font-weight: 900; font-size: 18px; text-align: center; margin-top: 20px; text-transform: uppercase; }
 
         /* NOVA CALCULADORA (DESCOBRE TAXA) */
         .btn-descobre { background: #333 !important; color: #FFE600 !important; margin-top: 20px; border: 2px solid #333; }
-        .box-calculadora { display: none; background: #fff; border: 2px solid #333; border-radius: 15px; padding: 20px; margin-top: 10px; animation: fadeIn 0.4s; }
+        .box-calculadora { display: none; background: #fff; border: 2px solid #333; border-radius: 15px; padding: 20px; margin-top: 10px; animation: fadeIn 0.4s; position: relative; }
         .display-calculadora { background: #f4f4f4; border-radius: 10px; padding: 15px; margin-bottom: 15px; text-align: center; border: 1px solid #ddd; }
         .label-calc { font-size: 12px; color: #666; text-transform: uppercase; font-weight: bold; }
         .valor-destaque-blue { font-size: 24px; font-weight: 800; color: #3483FA; display: block; }
@@ -157,7 +156,7 @@
             <span><label>Manutenção (R$)</label><input id="fixo_manutencao" type="number"></span>
         </div>
         
-        <div class="pix-app-box">
+        <div style="background:#f6fff6; padding:15px; border-radius:12px; border:1px dashed #4caf50; margin-top:15px">
             <h4 style="margin: 0; font-size: 14px; color: #2e7d32;">📊 Custos Extras PIX (App Bancário)</h4>
             <div class="grid-taxas" style="margin-top:10px">
                 <span><label>Vol. PIX no App (R$)</label><input id="vol_pix_app" type="number"></span>
@@ -186,7 +185,8 @@
     <button class="btn-descobre" onclick="toggleDescobreTaxa()">🔍 Abrir Ferramenta: Descobre Taxa</button>
 
     <div id="boxDescobreTaxa" class="box-calculadora">
-        <h3 style="border-bottom-color: #333;">Calculadora Reversa</h3>
+        <h3>Calculadora Reversa <button type="button" class="btn-limpar" onclick="limparDescobreTaxa()" style="position: absolute; right: 20px; top: 18px;">🗑️ Limpar</button></h3>
+        
         <div class="display-calculadora">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <div>
@@ -233,7 +233,6 @@
     <div id="rel_info_adicional" class="info-adicional-rel"></div>
     <div class="nota-faloes">
         <p><b>Sobre o Cofrinho:</b> Projeção baseada em aportes mensais fixos.</p>
-        <p><b>Nota:</b> Sujeito a análise de perfil e alterações sem aviso prévio.</p>
     </div>
 </div>
 
