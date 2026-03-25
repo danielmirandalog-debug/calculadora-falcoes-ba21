@@ -1,20 +1,18 @@
-// 1. BLOQUEIO DE ACESSO RESTRITO
-(function() {
-    const senhaCorreta = "123456"; 
-    let acesso = localStorage.getItem("acesso_simulador");
+/* PROJETO: Falcões da BA21 - Simulador Premium
+   PROTEÇÃO: Ativada contra inspeção e cópia
+*/
 
-    if (acesso !== "permitido") {
-        let tentativa = prompt("Digite a senha de acesso dos Falcões BA21:");
-        if (tentativa === senhaCorreta) {
-            localStorage.setItem("acesso_simulador", "permitido");
-            alert("Acesso autorizado!");
-        } else {
-            alert("Senha incorreta. Acesso negado.");
-            document.body.innerHTML = "<h1 style='text-align:center; margin-top:50px;'>Acesso Restrito.</h1>";
-            window.location.reload();
-        }
+// 1. BLINDAGEM DO PROJETO (PROTEÇÃO DE INTERFACE)
+document.addEventListener('contextmenu', event => event.preventDefault()); // Bloqueia botão direito
+
+document.onkeydown = function(e) {
+    // Bloqueia F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+    if(e.keyCode == 123 || 
+      (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0))) || 
+      (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) {
+        return false;
     }
-})();
+};
 
 // 2. INICIALIZAÇÃO E GERAÇÃO DE CAMPOS
 document.addEventListener("DOMContentLoaded", function() {
@@ -248,7 +246,7 @@ async function processarOCR(event, pref) {
     alert("Pronto!");
 }
 
-// 6. NOVO: DESCOBRE TAXA (CALCULADORA REVERSA)
+// 6. DESCOBRE TAXA (CALCULADORA REVERSA)
 function toggleDescobreTaxa() {
     const box = document.getElementById("boxDescobreTaxa");
     box.style.display = (box.style.display === "none" || box.style.display === "") ? "block" : "none";
