@@ -1,5 +1,5 @@
 /* PROJETO: Falcões da BA21 - Simulador Premium
-   VERSÃO: Final Consolidada com Notas Técnicas e Cofrinho
+   VERSÃO: Corrigida - Comparação Dinâmica
 */
 
 // 1. PROTEÇÃO E BLINDAGEM
@@ -73,17 +73,35 @@ function limparSecao(tipo) {
 
 function simular() {
     let html = `<table class="tabela-moderna"><tr><th>Plano</th><th>Mercado Pago</th><th>Concorrência</th></tr>`;
-    const parcelas = ["pix", "debito", 1, 2, 3, 4, 6, 10]; 
-    parcelas.forEach(p => {
-        let idMP = (p === "pix") ? "mp_pix" : (p === "debito" ? "mp_debito" : "mp" + p);
-        let idOut = (p === "pix") ? "out_pix_manual" : (p === "debito" ? "out_debito_manual" : "out" + p + "_manual");
+    
+    // Pix, Débito e 1x sempre aparecem
+    const bases = ["pix", "debito", "1"];
+    bases.forEach(p => {
+        let idMP = (p === "pix") ? "mp_pix" : (p === "debito" ? "mp_debito" : "mp1");
+        let idOut = (p === "pix") ? "out_pix_manual" : (p === "debito" ? "out_debito_manual" : "out1_manual");
+        
         let tMP = parseFloat(document.getElementById(idMP).value) || 0;
         let tOut = parseFloat(document.getElementById(idOut).value) || 0;
-        let nome = p === "pix" ? "Pix" : p === "debito" ? "Débito" : p + "x";
+        let nome = p === "pix" ? "Pix" : p === "debito" ? "Débito" : "1x";
+        
         let classeMP = tMP > tOut ? 'taxaRuim' : 'taxaBoa'; 
         let classeOut = tOut > tMP ? 'taxaRuim' : '';
         html += `<tr><td><b>${nome}</b></td><td class="taxa-destaque ${classeMP}">${tMP.toFixed(2)}%</td><td class="taxa-destaque ${classeOut}">${tOut.toFixed(2)}%</td></tr>`;
     });
+
+    // Parcelas de 2x a 18x só aparecem se houver valor no Mercado Pago
+    for (let i = 2; i <= 18; i++) {
+        let valMP = document.getElementById("mp" + i).value;
+        if (valMP !== "" && !isNaN(valMP)) {
+            let tMP = parseFloat(valMP);
+            let tOut = parseFloat(document.getElementById("out" + i + "_manual").value) || 0;
+            
+            let classeMP = tMP > tOut ? 'taxaRuim' : 'taxaBoa'; 
+            let classeOut = tOut > tMP ? 'taxaRuim' : '';
+            html += `<tr><td><b>${i}x</b></td><td class="taxa-destaque ${classeMP}">${tMP.toFixed(2)}%</td><td class="taxa-destaque ${classeOut}">${tOut.toFixed(2)}%</td></tr>`;
+        }
+    }
+
     html += "</table>";
     document.getElementById("resultado").innerHTML = html;
     document.getElementById("btnExportarSimples").style.display = "block";
@@ -129,7 +147,6 @@ function simularFaturamento() {
     let res = parseFloat(cofrinho_reserva.value) || 0;
     let cdi = (window.selicAtual || 10.75) - 0.1;
     let alvo = (parseFloat(cofrinho_cdi_alvo.value) || 105) / 100;
-
     const calcCofre = (m) => {
         let s = 0;
         for(let i=0; i<m; i++){
