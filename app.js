@@ -1,5 +1,5 @@
 /* PROJETO: Falcões da BA21 - Simulador Premium
-   VERSÃO: Beta Corrigida e Otimizada
+   VERSÃO: Beta Corrigida - 24/03/2026
 */
 
 // 1. BLINDAGEM E PROTEÇÃO
@@ -72,34 +72,21 @@ function limparSecao(tipo) {
 }
 
 function simular() {
-    let mp = { pix: parseFloat(mp_pix.value) || 0, debito: parseFloat(mp_debito.value) || 0, 1: parseFloat(mp1.value) || 0 };
-    for (let i = 2; i <= 18; i++) {
-        let val = document.getElementById("mp" + i).value;
-        mp[i] = (val === "" || isNaN(val)) ? null : parseFloat(val);
-    }
-
-    let out = {
-        pix: parseFloat(document.getElementById("out_pix_manual").value) || 0,
-        debito: parseFloat(document.getElementById("out_debito_manual").value) || 0,
-        1: parseFloat(document.getElementById("out1_manual").value) || 0
-    };
-    for (let i = 2; i <= 18; i++) {
-        out[i] = parseFloat(document.getElementById("out" + i + "_manual").value) || 0;
-    }
-
     let html = `<table class="tabela-moderna"><tr><th>Plano</th><th>Mercado Pago</th><th>Concorrência</th></tr>`;
-    let parcelas = ["pix", "debito"];
-    for(let i=1; i<=18; i++) parcelas.push(i);
+    const parcelas = ["pix", "debito", 1, 2, 3, 4, 6, 10]; // Parcelas padrão de share
 
     parcelas.forEach(p => {
-        let tMP = (p === "pix") ? mp.pix : (p === "debito" ? mp.debito : mp[p]);
-        if (tMP !== null && !isNaN(tMP)) {
-            let tOut = (p === "pix") ? out.pix : (p === "debito" ? out.debito : out[p]);
-            let nome = p === "pix" ? "Pix" : p === "debito" ? "Débito" : p + "x";
-            let classeMP = tMP > tOut ? 'taxaRuim' : 'taxaBoa'; 
-            let classeOut = tOut > tMP ? 'taxaRuim' : '';
-            html += `<tr><td><b>${nome}</b></td><td class="taxa-destaque ${classeMP}">${tMP.toFixed(2)}%</td><td class="taxa-destaque ${classeOut}">${tOut.toFixed(2)}%</td></tr>`;
-        }
+        let idMP = (p === "pix") ? "mp_pix" : (p === "debito" ? "mp_debito" : "mp" + p);
+        let idOut = (p === "pix") ? "out_pix_manual" : (p === "debito" ? "out_debito_manual" : "out" + p + "_manual");
+        
+        let tMP = parseFloat(document.getElementById(idMP).value) || 0;
+        let tOut = parseFloat(document.getElementById(idOut).value) || 0;
+        let nome = p === "pix" ? "Pix" : p === "debito" ? "Débito" : p + "x";
+        
+        let classeMP = tMP > tOut ? 'taxaRuim' : 'taxaBoa'; 
+        let classeOut = tOut > tMP ? 'taxaRuim' : '';
+        
+        html += `<tr><td><b>${nome}</b></td><td class="taxa-destaque ${classeMP}">${tMP.toFixed(2)}%</td><td class="taxa-destaque ${classeOut}">${tOut.toFixed(2)}%</td></tr>`;
     });
     html += "</table>";
     document.getElementById("resultado").innerHTML = html;
@@ -162,7 +149,7 @@ function simularFaturamento() {
         <div class="resumo-financeiro">
             <h4>💰 Rentabilidade Real Individualizada</h4>
             <b>Custo MP:</b> R$ ${custoMP.toFixed(2)} | <b>Custo Conc:</b> R$ ${custoConc.toFixed(2)}<br>
-            <b>Economia Mensal:</b> <span style="color:${ecoMes > 0 ? '#007bff' : 'red'}; font-weight:bold">R$ ${ecoMes.toFixed(2)}</span><br>
+            <b>Economia Mensal:</b> <span id="val_eco_mes" style="color:${ecoMes > 0 ? '#007bff' : 'red'}; font-weight:bold">R$ ${ecoMes.toFixed(2)}</span><br>
             <b>Economia 5 Anos: R$ ${(ecoMes * 60).toFixed(2)}</b><hr>
             <h4>📈 Projeção Cofrinho</h4>
             <b>Saldo 1 Ano:</b> R$ ${calcCofre(12).toFixed(2)} | <b>5 Anos:</b> R$ ${calcCofre(60).toFixed(2)}
@@ -188,20 +175,22 @@ function exportarRelatorio(apenasTaxas) {
 
     let checkboxAtivo = apenasTaxas ? document.getElementById("chk_info_simples") : document.getElementById("chk_info_completo");
     boxInfoAdicional.style.display = checkboxAtivo.checked ? "block" : "none";
-    if (checkboxAtivo.checked) boxInfoAdicional.innerHTML = `<b>Informações adicionais:</b>\n➡️ Máquina sem aluguel\n➡️ Conta sem taxas adm\n➡️ Recebimento imediato\n➡️ Parcelamento 18x\n➡️ Rendimentos diários`;
+    if (checkboxAtivo.checked) {
+        boxInfoAdicional.innerHTML = `<b>Informações adicionais:</b>\n➡️ Máquina sem aluguel\n➡️ Conta sem taxas adm\n➡️ Recebimento imediato\n➡️ Parcelamento 18x\n➡️ Rendimentos diários`;
+    }
 
     if (apenasTaxas) {
         boxCorpo.style.display = "none"; boxGrafico.style.display = "none";
     } else {
         boxCorpo.style.display = "block"; boxGrafico.style.display = "block";
-        boxCorpo.innerHTML = "<h3>Rentabilidade e Projeção</h3>" + document.getElementById("resultadoFaturamento").innerHTML;
+        boxCorpo.innerHTML = "<h3>Rentabilidade e Projeção</h3>" + (document.getElementById("resultadoFaturamento").innerHTML);
         if (window.g) document.getElementById("img_grafico").src = document.getElementById("graficoEconomia").toDataURL();
     }
 
     setTimeout(() => {
         html2canvas(document.getElementById("areaRelatorio"), { scale: 2 }).then(canvas => {
             let link = document.createElement("a");
-            link.download = `BA21_Relatorio.png`;
+            link.download = `Falcões_BA21_Relatorio.png`;
             link.href = canvas.toDataURL();
             link.click();
         });
