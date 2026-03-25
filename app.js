@@ -114,7 +114,7 @@ function atualizarBarra() {
     document.getElementById("barra").style.background = (Math.round(soma) === 100) ? "#4CAF50" : "#FFE600";
 }
 
-// 4. SIMULAÇÃO DE FATURAMENTO E COFRINHO
+// 4. SIMULAÇÃO DE FATURAMENTO
 function simularFaturamento() {
     let soma = 0;
     IDs_SHARE.forEach(id => soma += parseFloat(document.getElementById(id).value) || 0);
@@ -252,6 +252,15 @@ async function processarOCR(event, pref) {
 function toggleDescobreTaxa() {
     const box = document.getElementById("boxDescobreTaxa");
     box.style.display = (box.style.display === "none" || box.style.display === "") ? "block" : "none";
+}
+
+function limparDescobreTaxa() {
+    document.getElementById("calc_valor_op").value = "";
+    document.getElementById("calc_valor_rec").value = "";
+    document.getElementById("calc_taxa_perc").value = "";
+    document.getElementById("res_taxa_percent").innerText = "0.00%";
+    document.getElementById("res_valor_desc").innerText = "- $ 0,00";
+    document.getElementById("res_valor_final").innerText = "$ 0,00";
 }
 
 function calcularDescobreTaxa(origem) {
