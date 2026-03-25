@@ -3,44 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Falcões da BA21 - Simulador Premium</title>
+    <title>Calculadora de Taxas - Falcões da BA21</title>
+
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#FFE600">
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="app.js" defer></script>
+
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #fdfdfd; margin: 0; user-select: none; }
-        header { background: #FFE600; padding: 25px; text-align: center; font-weight: 800; border-bottom: 4px solid #333; }
+        body { font-family: 'Segoe UI', sans-serif; background: #fdfdfd; margin: 0; color: #333; -webkit-user-select: none; user-select: none; }
+        header { background: #FFE600; color: #333; padding: 25px; text-align: center; font-size: 24px; font-weight: 800; border-bottom: 4px solid #333; }
         .container { max-width: 800px; margin: auto; padding: 15px; }
         .card { background: white; padding: 20px; margin-bottom: 25px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border-top: 6px solid #FFE600; }
-        h3 { display: flex; justify-content: space-between; align-items: center; font-size: 18px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        h3 { margin-top: 0; display: flex; justify-content: space-between; align-items: center; font-size: 18px; border-bottom: 1px solid #eee; padding-bottom: 12px; }
         label { font-size: 13px; font-weight: bold; color: #777; display: block; }
-        input { width: 100%; padding: 12px; margin: 5px 0 10px; border: 1px solid #ddd; border-radius: 10px; user-select: text !important; }
-        button { width: 100%; padding: 16px; border: none; border-radius: 12px; background: #FFE600; font-weight: 800; cursor: pointer; text-transform: uppercase; }
-        .btn-exportar { background: #333 !important; color: white !important; margin-top: 10px; }
+        input { width: 100%; padding: 12px; margin: 5px 0 10px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; user-select: text !important; }
+        button { width: 100%; padding: 16px; margin-top: 10px; border: none; border-radius: 12px; background: #FFE600; color: #333; font-weight: 800; cursor: pointer; font-size: 17px; text-transform: uppercase; }
+        .btn-exportar { background: #333 !important; color: white !important; }
+        .btn-limpar { width: auto; padding: 6px 12px; font-size: 11px; background: #fcfcfc; color: #d32f2f; border: 1px solid #eee; margin: 0; border-radius: 6px; }
         .grid-taxas { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .btn-upload { background: #fff; border: 2px solid #FFE600; padding: 10px; border-radius: 10px; text-align: center; font-weight: bold; cursor: pointer; display: block; margin: 5px 0; }
-        .barraContainer { width: 100%; height: 12px; background: #f0f0f0; border-radius: 6px; margin: 15px 0; border: 1px solid #eee; overflow: hidden; }
-        .barraProgresso { height: 100%; width: 0%; background: #FFE600; transition: 0.5s; }
-        .tabela-moderna { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .tabela-moderna th { background: #f9f9f9; padding: 10px; border-bottom: 2px solid #333; }
-        .tabela-moderna td { padding: 10px; text-align: center; border-bottom: 1px solid #f0f0f0; }
+        .upload-group { display: flex; gap: 10px; margin: 15px 0; }
+        .btn-upload { flex: 1; background: #fff; border: 2px solid #FFE600; padding: 12px; border-radius: 10px; cursor: pointer; text-align: center; font-size: 13px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .barraContainer { width: 100%; height: 12px; background: #f0f0f0; border-radius: 6px; overflow: hidden; margin: 15px 0; border: 1px solid #eee; }
+        .barraProgresso { height: 100%; width: 0%; background: #FFE600; transition: 0.6s; }
+        .tabela-moderna { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        .tabela-moderna th { background: #f9f9f9; padding: 12px; text-align: center; border-bottom: 2px solid #333; color: #666; font-weight: bold; }
+        .tabela-moderna td { padding: 14px; text-align: center; border-bottom: 1px solid #f0f0f0; }
         .taxa-destaque { font-size: 18px; font-weight: 800; }
         .taxaBoa { color: #007bff; }
         .taxaRuim { color: #d32f2f; }
+        .resumo-financeiro { background:#f4f9ff; padding:20px; border-radius:12px; margin-top:15px; border-left: 6px solid #3483FA; }
         .box-calculadora { display: none; background: #fff; border: 2px solid #333; border-radius: 15px; padding: 20px; margin-top: 10px; position: relative; }
         .display-calculadora { background: #f4f4f4; border-radius: 10px; padding: 15px; text-align: center; margin-bottom: 15px; }
-        #areaRelatorio { position: absolute; left: -9999px; width: 750px; background: white; padding: 40px; }
+        .valor-destaque-blue { font-size: 24px; font-weight: 800; color: #3483FA; display: block; }
+        .valor-destaque-red { font-size: 20px; font-weight: 800; color: #d32f2f; display: block; }
 
-        /* ESTILO DO BANNER DE TERMOS (MODAL) */
+        /* Modal Termos */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
-        .modal-content { background: white; padding: 30px; border-radius: 20px; max-width: 500px; width: 100%; border-top: 10px solid #FFE600; box-shadow: 0 10px 40px rgba(0,0,0,0.5); text-align: justify; }
-        .modal-content h2 { margin-top: 0; text-align: center; color: #333; }
-        .modal-content p { font-size: 14px; color: #555; line-height: 1.6; }
-        .chk-container { display: flex; align-items: center; gap: 10px; background: #f9f9f9; padding: 15px; border-radius: 10px; margin: 20px 0; cursor: pointer; font-weight: bold; font-size: 14px; border: 1px solid #eee; }
-        .chk-container input { width: 22px; height: 22px; margin: 0; cursor: pointer; }
+        .modal-content { background: white; padding: 30px; border-radius: 20px; max-width: 500px; width: 100%; border-top: 10px solid #FFE600; text-align: justify; }
+        .chk-container { display: flex; align-items: center; gap: 10px; background: #f9f9f9; padding: 15px; border-radius: 10px; margin: 20px 0; font-weight: bold; cursor: pointer; }
+
+        #areaRelatorio { position: absolute; left: -9999px; width: 750px; background: white; padding: 50px; color: #333; }
+        .info-cli-rel { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; background: #fdfdfd; padding: 25px; border-radius: 15px; border: 1px solid #eee; }
     </style>
 </head>
 <body>
@@ -49,27 +55,27 @@
 
 <div class="container">
     <div class="card">
-        <h3>Atendimento <button onclick="location.reload()" style="width:auto; padding:5px 10px; font-size:10px">Resetar</button></h3>
+        <h3>Atendimento <button type="button" class="btn-limpar" onclick="location.reload()">Resetar Sistema</button></h3>
         <div class="grid-taxas">
-            <span><label>Empresa</label><input id="input_loja" type="text"></span>
-            <span><label>Responsável</label><input id="input_cliente" type="text"></span>
+            <span><label>Empresa</label><input id="input_loja" type="text" placeholder="Loja"></span>
+            <span><label>Responsável</label><input id="input_cliente" type="text" placeholder="Cliente"></span>
         </div>
-        <label>Data</label><input id="input_data" type="text" readonly>
+        <span><label>Data</label><input id="input_data" type="text" readonly style="background:#f9f9f9"></span>
     </div>
 
     <div class="card">
-        <label>Valor Simulação (R$)</label>
+        <label>Valor para Simulação (R$)</label>
         <input id="valor" type="number" value="1000.00" style="font-size: 20px; font-weight: bold; color: #3483FA; text-align: center;">
     </div>
 
     <div class="card">
-        <h3>Mercado Pago</h3>
+        <h3>Mercado Pago <button type="button" class="btn-limpar" onclick="limparSecao('mp')">Limpar</button></h3>
         <div class="grid-taxas">
-            <span><label>Pix (%)</label><input id="mp_pix" type="number" value="0.49"></span>
-            <span><label>Débito (%)</label><input id="mp_debito" type="number" value="0.99"></span>
-            <span><label>1x (%)</label><input id="mp1" type="number" value="3.05"></span>
+            <span><label>Pix (%)</label> <input id="mp_pix" type="number" value="0.49"></span>
+            <span><label>Débito (%)</label> <input id="mp_debito" type="number" value="0.99"></span>
+            <span><label>Crédito 1x (%)</label> <input id="mp1" type="number" value="3.05"></span>
         </div>
-        <div class="grid-taxas">
+        <div class="upload-group">
             <label class="btn-upload"><input type="file" capture="camera" style="display:none" onchange="processarOCR(event, 'mp')">📷 Câmera</label>
             <label class="btn-upload"><input type="file" style="display:none" onchange="processarOCR(event, 'mp')">📁 Arquivo</label>
         </div>
@@ -77,13 +83,13 @@
     </div>
 
     <div class="card">
-        <h3>Concorrência</h3>
+        <h3>Concorrência <button type="button" class="btn-limpar" onclick="limparSecao('out')">Limpar</button></h3>
         <div class="grid-taxas">
-            <span><label>Pix (%)</label><input id="out_pix_manual" type="number"></span>
-            <span><label>Débito (%)</label><input id="out_debito_manual" type="number"></span>
-            <span><label>1x (%)</label><input id="out1_manual" type="number"></span>
+             <span><label>Pix (%)</label> <input id="out_pix_manual" type="number" placeholder="0.00"></span>
+             <span><label>Débito (%)</label> <input id="out_debito_manual" type="number" placeholder="0.00"></span>
+             <span><label>Crédito 1x (%)</label> <input id="out1_manual" type="number" placeholder="0.00"></span>
         </div>
-        <div class="grid-taxas">
+        <div class="upload-group">
             <label class="btn-upload"><input type="file" capture="camera" style="display:none" onchange="processarOCR(event, 'out')">📷 Câmera</label>
             <label class="btn-upload"><input type="file" style="display:none" onchange="processarOCR(event, 'out')">📁 Arquivo</label>
         </div>
@@ -93,89 +99,101 @@
     <div class="card">
         <button onclick="simular()">Comparar Agora</button>
         <div id="resultado"></div>
-        <button id="btnExportarSimples" class="btn-exportar" onclick="exportarRelatorio(true)" style="display:none;">Exportar Taxas (PNG)</button>
+        <label class="checkbox-container" style="display:flex; align-items:center; gap:8px; margin:10px 0; font-size:14px">
+            <input type="checkbox" id="chk_info_simples"> Incluir termos no arquivo
+        </label>
+        <button id="btnExportarSimples" class="btn-exportar" onclick="exportarRelatorio(true)" style="display:none;">Exportar Apenas Taxas</button>
     </div>
 
     <div class="card">
-        <h3>Volume e Rentabilidade</h3>
+        <h3>Share e Volume <button type="button" class="btn-limpar" onclick="limparSecao('share')">Limpar</button></h3>
         <div class="barraContainer"><div class="barraProgresso" id="barra"></div></div>
-        <div style="text-align:right; font-size:12px">Meta: <span id="contador">0%</span></div>
+        <div style="text-align:right; font-size:12px">Meta 100%: <span id="contador">0%</span></div>
         <label>Faturamento Mensal (R$)</label><input id="faturamento" type="number">
         <div class="grid-taxas">
-            <span>Pix: <input id="share_pix" oninput="atualizarBarra()" type="number"></span>
-            <span>Débito: <input id="share_debito" oninput="atualizarBarra()" type="number"></span>
-            <span>1x: <input id="share_1x" oninput="atualizarBarra()" type="number"></span>
-            <span>2x: <input id="share_2x" oninput="atualizarBarra()" type="number"></span>
-            <span>3x: <input id="share_3x" oninput="atualizarBarra()" type="number"></span>
-            <span>4x: <input id="share_4x" oninput="atualizarBarra()" type="number"></span>
-            <span>6x: <input id="share_6x" oninput="atualizarBarra()" type="number"></span>
-            <span>10x: <input id="share_10x" oninput="atualizarBarra()" type="number"></span>
+            <span>Pix %: <input id="share_pix" oninput="atualizarBarra()" type="number"></span>
+            <span>Débito %: <input id="share_debito" oninput="atualizarBarra()" type="number"></span>
+            <span>1x %: <input id="share_1x" oninput="atualizarBarra()" type="number"></span>
+            <span>2x %: <input id="share_2x" oninput="atualizarBarra()" type="number"></span>
+            <span>3x %: <input id="share_3x" oninput="atualizarBarra()" type="number"></span>
+            <span>4x %: <input id="share_4x" oninput="atualizarBarra()" type="number"></span>
+            <span>6x %: <input id="share_6x" oninput="atualizarBarra()" type="number"></span>
+            <span>10x %: <input id="share_10x" oninput="atualizarBarra()" type="number"></span>
         </div>
 
-        <h4 style="margin-top:20px">Custos Ocultos Conc.</h4>
+        <h3 style="margin-top:25px">Custos Ocultos <button type="button" class="btn-limpar" onclick="limparSecao('fixos')">Limpar</button></h3>
         <div class="grid-taxas">
-            <span>Mensal: <input id="fixo_sistema" type="number"></span>
+            <span>Mensalidade: <input id="fixo_sistema" type="number"></span>
             <span>Aluguel: <input id="fixo_maquina" type="number"></span>
+            <span>Banco: <input id="fixo_cesta" type="number"></span>
+            <span>Manutenção: <input id="fixo_manutencao" type="number"></span>
         </div>
-        
-        <h4 style="margin-top:20px">Cofrinho</h4>
+        <div style="background:#f6fff6; padding:15px; border-radius:12px; border:1px dashed #4caf50; margin-top:15px">
+            <h4 style="margin:0">📊 Pix App Bancário</h4>
+            <div class="grid-taxas">
+                <span>Volume: <input id="vol_pix_app" type="number"></span>
+                <span>Taxa %: <input id="taxa_pix_app" type="number"></span>
+            </div>
+        </div>
+
+        <h3 style="margin-top:25px">Cofrinho <button type="button" class="btn-limpar" onclick="limparSecao('cofrinho')">Limpar</button></h3>
         <div class="grid-taxas">
             <span>Aporte: <input id="cofrinho_reserva" type="number"></span>
             <span>% CDI: <input id="cofrinho_cdi_alvo" type="number" value="105"></span>
         </div>
-
-        <button onclick="simularFaturamento()" style="margin-top:15px">Gerar Estudo</button>
+        <button onclick="simularFaturamento()">Gerar Estudo de Rentabilidade</button>
         <div id="resultadoFaturamento"></div>
-        <canvas id="graficoEconomia" style="margin-top:20px"></canvas>
+        <canvas id="graficoEconomia" style="margin-top:20px; max-height:300px"></canvas>
     </div>
 
-    <button onclick="exportarRelatorio(false)" class="btn-exportar">Relatório Completo (PNG)</button>
-    <button onclick="toggleDescobreTaxa()" style="background:#333; color:#FFE600; margin-top:15px">🔍 Descobre Taxa</button>
-    
+    <label class="checkbox-container" style="display:flex; align-items:center; gap:8px; margin-bottom:10px; font-size:14px">
+        <input type="checkbox" id="chk_info_completo"> Incluir Termos Adicionais
+    </label>
+    <button onclick="exportarRelatorio(false)" class="btn-exportar">Exportar Relatório Completo</button>
+
+    <button onclick="toggleDescobreTaxa()" style="background:#333; color:#FFE600; margin-top:15px">🔍 Abrir Descobre Taxa</button>
     <div id="boxDescobreTaxa" class="box-calculadora">
-        <h3>Calculadora Reversa <button onclick="limparDescobreTaxa()" style="width:auto; padding:5px">🗑️</button></h3>
+        <h3>Descobre Taxa <button type="button" class="btn-limpar" onclick="limparDescobreTaxa()" style="position:absolute; right:20px; top:18px">🗑️</button></h3>
         <div class="display-calculadora">
-            <span class="label-calc">Taxa</span><span id="res_taxa_percent" class="valor-destaque-red">0.00%</span>
-            <span class="label-calc">Líquido</span><span id="res_valor_final" class="valor-destaque-blue">$ 0,00</span>
+            <span id="res_taxa_percent" class="valor-destaque-red">0.00%</span>
+            <span id="res_valor_desc" class="valor-destaque-red">- $ 0,00</span>
+            <span id="res_valor_final" class="valor-destaque-blue">$ 0,00</span>
         </div>
         <div class="grid-taxas">
             <span>Bruto: <input id="calc_valor_op" type="number" oninput="calcularDescobreTaxa('valor')"></span>
             <span>Recebido: <input id="calc_valor_rec" type="number" oninput="calcularDescobreTaxa('recebido')"></span>
         </div>
-        <label>Taxa direta (%)</label><input id="calc_taxa_perc" type="number" oninput="calcularDescobreTaxa('taxa')">
+        <label>Taxa direta %</label><input id="calc_taxa_perc" type="number" oninput="calcularDescobreTaxa('taxa')">
     </div>
 </div>
 
 <div id="modalTermos" class="modal-overlay">
     <div class="modal-content">
-        <h2>⚠️ Termos de Uso e Isenção</h2>
-        <p>Esta aplicação é uma ferramenta independente de simulação e análise financeira. Ao utilizar este sistema, você declara estar ciente de que:</p>
-        <p>1. <b>Isenção de Vínculo:</b> Este software NÃO possui vínculo oficial com o Mercado Pago ou suas afiliadas.</p>
-        <p>2. <b>Responsabilidade:</b> Todas as projeções, taxas inseridas e relatórios gerados são de inteira responsabilidade do usuário.</p>
-        <p>3. <b>Veracidade:</b> O desenvolvedor isenta-se de qualquer responsabilidade sobre a precisão das taxas informadas pela concorrência ou variações de mercado.</p>
-        <p>4. <b>Natureza Educativa:</b> Os dados aqui gerados são estimativas para fins de consulta estratégica e não garantem rentabilidade futura.</p>
-        
+        <h2>⚠️ Termos e Isenção</h2>
+        <p>Esta aplicação é independente. Ao prosseguir, você concorda que:</p>
+        <p>1. Não possui vínculo oficial com o Mercado Pago.<br>
+           2. Todas as taxas inseridas são de responsabilidade do usuário.<br>
+           3. Os dados gerados são estimativas baseadas em informações manuais.</p>
         <label class="chk-container">
-            <input type="checkbox" id="chk_termos_uso"> Estou de acordo com os termos.
+            <input type="checkbox" id="chk_termos_uso"> Estou de acordo
         </label>
-        
-        <button onclick="confirmarTermos()" style="background:#333; color:white">Acessar Simulador</button>
+        <button onclick="confirmarTermos()" style="background:#333; color:white">Acessar Sistema</button>
     </div>
 </div>
 
 <div id="areaRelatorio">
-    <div style="text-align:center; border-bottom:4px solid #FFE600; padding-bottom:20px">
+    <div style="text-align:center; border-bottom:5px solid #FFE600; padding-bottom:30px">
         <h1>Falcões da BA21</h1>
-        <p>Proposta Estratégica</p>
+        <p>Proposta Estratégica de Rentabilidade</p>
     </div>
-    <div style="display:flex; justify-content:space-between; margin-top:20px">
+    <div class="info-cli-rel">
         <div><b>Loja:</b> <span id="rel_loja"></span></div>
         <div><b>Data:</b> <span id="rel_data"></span></div>
     </div>
-    <div><b>Responsável:</b> <span id="rel_cliente"></span></div>
     <div id="rel_tabela_taxas"></div>
     <div id="rel_share_cofrinho"></div>
-    <div id="rel_grafico_box" style="text-align:center; margin-top:20px"><img id="img_grafico" style="max-width:100%"></div>
+    <div id="rel_grafico_box" style="text-align:center; margin-top:25px"><img id="img_grafico" style="max-width:100%"></div>
+    <div id="rel_info_adicional" style="margin-top:25px; font-size:14px; white-space:pre-line; border-left:5px solid #FFE600; padding-left:15px"></div>
 </div>
 
 </body>
