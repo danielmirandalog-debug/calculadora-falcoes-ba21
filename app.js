@@ -1,8 +1,8 @@
 /* PROJETO: Falcões da BA21 - Simulador Premium
-   AVISO: Esta é uma ferramenta independente.
+   VERSÃO: Beta Integrada com Proteção e Termos
 */
 
-// 1. BLINDAGEM DO PROJETO
+// 1. BLINDAGEM DO PROJETO (PROTEÇÃO DE INTERFACE)
 document.addEventListener('contextmenu', event => event.preventDefault());
 document.onkeydown = function(e) {
     if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false;
@@ -21,17 +21,13 @@ function confirmarTermos() {
 
 // 3. INICIALIZAÇÃO
 document.addEventListener("DOMContentLoaded", function() {
-    // Verifica se já aceitou os termos nesta sessão (opcional: remova a linha abaixo se quiser que apareça SEMPRE)
-    if (localStorage.getItem("termos_aceitos_ba21") === "sim") {
-        document.getElementById("modalTermos").style.display = "none";
-    }
-
+    // Exibe o modal sempre ao carregar para garantir segurança jurídica no Beta
+    document.getElementById("modalTermos").style.display = "flex";
+    
     gerarInputs();
     buscarCDI();
     document.getElementById("input_data").value = new Date().toLocaleDateString('pt-BR');
 });
-
-// --- RESTANTE DAS FUNÇÕES ORIGINAIS (SEM ALTERAÇÃO DE LÓGICA) ---
 
 const IDs_SHARE = ["share_pix","share_debito","share_1x","share_2x","share_3x","share_4x","share_6x","share_10x"];
 
@@ -161,8 +157,13 @@ function simularFaturamento() {
     document.getElementById("resultadoFaturamento").innerHTML = `
         <div class="resumo-financeiro">
             <h4>💰 Rentabilidade Real Individualizada</h4>
+            <b>Custo Operacional MP:</b> R$ ${custoMP.toFixed(2)}<br>
+            <b>Custo Operacional Conc.:</b> R$ ${custoConc.toFixed(2)}<br>
             <b>Economia Mensal:</b> <span style="color:${ecoMes > 0 ? '#007bff' : 'red'}; font-size:16px; font-weight:bold">R$ ${ecoMes.toFixed(2)}</span><br>
-            <b>Economia em 5 Anos: R$ ${(ecoMes * 60).toFixed(2)}</b>
+            <b>Economia em 5 Anos: R$ ${(ecoMes * 60).toFixed(2)}</b><hr>
+            <h4>📈 Projeção Cofrinho</h4>
+            <b>Saldo 1 Ano:</b> R$ ${c1.toFixed(2)}<br>
+            <b>Saldo 5 Anos:</b> R$ ${c5.toFixed(2)}
         </div>`;
     if (window.g) window.g.destroy();
     window.g = new Chart(document.getElementById("graficoEconomia"), {
@@ -179,11 +180,29 @@ function exportarRelatorio(apenasTaxas) {
     document.getElementById("rel_tabela_taxas").innerHTML = "<h3>Comparativo de Taxas</h3>" + document.getElementById("resultado").innerHTML;
     let boxCorpo = document.getElementById("rel_share_cofrinho");
     let boxGrafico = document.getElementById("rel_grafico_box");
+    let boxInfoAdicional = document.getElementById("rel_info_adicional");
+
+    const textoAdicional = `<b>Informações adicionais:</b>
+➡️ Máquina sem aluguel
+➡️ Conta sem anuidade e sem taxas administrativas
+➡️ Link de pagamento com recebimento na hora e com as mesmas condições de taxas da máquina
+➡️ Parcelamento até 18x
+➡️ Mesma taxa para todas as bandeiras (Visa, Master, Elo, Hipercard, Amex, Diners)
+➡️ Todos valores entram na hora na conta, mesmo em feriado e final de semana, ou seja: PASSOU O CARTAO, RECEBIMENTO IMEDIATO 😃
+➡️ Rendimentos diários na conta através do nosso cofrinho
+➡️ Fácil acesso ao App
+➡️ NOVIDADE: Software de gestão completo para o seu negócio (consulte condições)
+🗒️Simulação com validade de 07 dias, a contar da data de recebimento desse.`;
+
+    let checkboxAtivo = apenasTaxas ? document.getElementById("chk_info_simples") : document.getElementById("chk_info_completo");
+    boxInfoAdicional.style.display = checkboxAtivo.checked ? "block" : "none";
+    if (checkboxAtivo.checked) boxInfoAdicional.innerHTML = textoAdicional;
+
     if (apenasTaxas) {
         boxCorpo.style.display = "none"; boxGrafico.style.display = "none";
     } else {
         boxCorpo.style.display = "block"; boxGrafico.style.display = "block";
-        boxCorpo.innerHTML = "<h3>Rentabilidade</h3>" + document.getElementById("resultadoFaturamento").innerHTML;
+        boxCorpo.innerHTML = "<h3>Rentabilidade e Projeção</h3>" + document.getElementById("resultadoFaturamento").innerHTML;
         if (window.g) document.getElementById("img_grafico").src = document.getElementById("graficoEconomia").toDataURL();
     }
     setTimeout(() => {
