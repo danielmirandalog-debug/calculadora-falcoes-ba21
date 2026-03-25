@@ -1,8 +1,8 @@
 /* PROJETO: Falcões da BA21 - Simulador Premium
-   VERSÃO: Beta Corrigida - 24/03/2026
+   VERSÃO: Final Consolidada com Notas Técnicas e Cofrinho
 */
 
-// 1. BLINDAGEM E PROTEÇÃO
+// 1. PROTEÇÃO E BLINDAGEM
 document.addEventListener('contextmenu', event => event.preventDefault());
 document.onkeydown = function(e) {
     if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false;
@@ -73,19 +73,15 @@ function limparSecao(tipo) {
 
 function simular() {
     let html = `<table class="tabela-moderna"><tr><th>Plano</th><th>Mercado Pago</th><th>Concorrência</th></tr>`;
-    const parcelas = ["pix", "debito", 1, 2, 3, 4, 6, 10]; // Parcelas padrão de share
-
+    const parcelas = ["pix", "debito", 1, 2, 3, 4, 6, 10]; 
     parcelas.forEach(p => {
         let idMP = (p === "pix") ? "mp_pix" : (p === "debito" ? "mp_debito" : "mp" + p);
         let idOut = (p === "pix") ? "out_pix_manual" : (p === "debito" ? "out_debito_manual" : "out" + p + "_manual");
-        
         let tMP = parseFloat(document.getElementById(idMP).value) || 0;
         let tOut = parseFloat(document.getElementById(idOut).value) || 0;
         let nome = p === "pix" ? "Pix" : p === "debito" ? "Débito" : p + "x";
-        
         let classeMP = tMP > tOut ? 'taxaRuim' : 'taxaBoa'; 
         let classeOut = tOut > tMP ? 'taxaRuim' : '';
-        
         html += `<tr><td><b>${nome}</b></td><td class="taxa-destaque ${classeMP}">${tMP.toFixed(2)}%</td><td class="taxa-destaque ${classeOut}">${tOut.toFixed(2)}%</td></tr>`;
     });
     html += "</table>";
@@ -117,7 +113,6 @@ function simularFaturamento() {
 
     let custoMP = 0; let custoConc = 0;
     const shareMap = { pix: 'share_pix', debito: 'share_debito', 1: 'share_1x', 2: 'share_2x', 3: 'share_3x', 4: 'share_4x', 6: 'share_6x', 10: 'share_10x' };
-
     Object.keys(shareMap).forEach(p => {
         let percShare = parseFloat(document.getElementById(shareMap[p]).value) || 0;
         let valorFatia = f * (percShare / 100);
@@ -147,12 +142,15 @@ function simularFaturamento() {
 
     document.getElementById("resultadoFaturamento").innerHTML = `
         <div class="resumo-financeiro">
-            <h4>💰 Rentabilidade Real Individualizada</h4>
-            <b>Custo MP:</b> R$ ${custoMP.toFixed(2)} | <b>Custo Conc:</b> R$ ${custoConc.toFixed(2)}<br>
-            <b>Economia Mensal:</b> <span id="val_eco_mes" style="color:${ecoMes > 0 ? '#007bff' : 'red'}; font-weight:bold">R$ ${ecoMes.toFixed(2)}</span><br>
-            <b>Economia 5 Anos: R$ ${(ecoMes * 60).toFixed(2)}</b><hr>
+            <h4 style="margin-top:0">💰 Rentabilidade Real Individualizada</h4>
+            <b>Custo Operacional MP:</b> R$ ${custoMP.toFixed(2)}<br>
+            <b>Custo Operacional Conc.:</b> R$ ${custoConc.toFixed(2)}<br>
+            <b>Economia Mensal:</b> <span style="color:${ecoMes > 0 ? '#007bff' : 'red'}; font-size:16px; font-weight:bold">R$ ${ecoMes.toFixed(2)}</span><br>
+            <b>Economia em 1 Ano:</b> R$ ${(ecoMes * 12).toFixed(2)}<br>
+            <b style="color: #2e7d32; font-size:16px;">Economia em 5 Anos: R$ ${(ecoMes * 60).toFixed(2)}</b><hr>
             <h4>📈 Projeção Cofrinho</h4>
-            <b>Saldo 1 Ano:</b> R$ ${calcCofre(12).toFixed(2)} | <b>5 Anos:</b> R$ ${calcCofre(60).toFixed(2)}
+            <b>Saldo 1 Ano:</b> R$ ${calcCofre(12).toFixed(2)}<br>
+            <b>Saldo 5 Anos:</b> R$ ${calcCofre(60).toFixed(2)}
         </div>`;
 
     if (window.g) window.g.destroy();
@@ -173,24 +171,35 @@ function exportarRelatorio(apenasTaxas) {
     let boxGrafico = document.getElementById("rel_grafico_box");
     let boxInfoAdicional = document.getElementById("rel_info_adicional");
 
+    const textoCompleto = `<b>Informações adicionais:</b>
+➡️ Máquina sem aluguel
+➡️ Conta sem anuidade e sem taxas administrativas
+➡️ Link de pagamento com recebimento na hora e com as mesmas condições de taxas da máquina
+➡️ Parcelamento até 18x
+➡️ Mesma taxa para todas as bandeiras (Visa, Master, Elo, Hipercard, Amex, Diners)
+➡️ Todos valores entram na hora na conta, mesmo em feriado e final de semana, ou seja: PASSOU O CARTAO, RECEBIMENTO IMEDIATO 😃
+➡️ Rendimentos diários na conta através do nosso cofrinho
+➡️ Fácil acesso ao App
+➡️ NOVIDADE: Software de gestão completo para o seu negócio (consulte condições)
+
+🗒️Simulação com validade de 07 dias, a contar da data de recebimento desse.`;
+
     let checkboxAtivo = apenasTaxas ? document.getElementById("chk_info_simples") : document.getElementById("chk_info_completo");
     boxInfoAdicional.style.display = checkboxAtivo.checked ? "block" : "none";
-    if (checkboxAtivo.checked) {
-        boxInfoAdicional.innerHTML = `<b>Informações adicionais:</b>\n➡️ Máquina sem aluguel\n➡️ Conta sem taxas adm\n➡️ Recebimento imediato\n➡️ Parcelamento 18x\n➡️ Rendimentos diários`;
-    }
+    if (checkboxAtivo.checked) boxInfoAdicional.innerHTML = textoCompleto;
 
     if (apenasTaxas) {
         boxCorpo.style.display = "none"; boxGrafico.style.display = "none";
     } else {
         boxCorpo.style.display = "block"; boxGrafico.style.display = "block";
-        boxCorpo.innerHTML = "<h3>Rentabilidade e Projeção</h3>" + (document.getElementById("resultadoFaturamento").innerHTML);
+        boxCorpo.innerHTML = "<h3>Rentabilidade e Projeção</h3>" + document.getElementById("resultadoFaturamento").innerHTML;
         if (window.g) document.getElementById("img_grafico").src = document.getElementById("graficoEconomia").toDataURL();
     }
 
     setTimeout(() => {
         html2canvas(document.getElementById("areaRelatorio"), { scale: 2 }).then(canvas => {
             let link = document.createElement("a");
-            link.download = `Falcões_BA21_Relatorio.png`;
+            link.download = `BA21_Relatorio.png`;
             link.href = canvas.toDataURL();
             link.click();
         });
