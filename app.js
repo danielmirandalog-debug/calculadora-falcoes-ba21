@@ -16,7 +16,7 @@
     }
 })();
 
-// 2. INICIALIZAÇÃO
+// 2. INICIALIZAÇÃO E GERAÇÃO DE CAMPOS
 document.addEventListener("DOMContentLoaded", function() {
     gerarInputs();
     buscarCDI();
@@ -67,7 +67,7 @@ function limparSecao(tipo) {
     }
 }
 
-// 3. SIMULAÇÃO DE TAXAS COM LÓGICA DE CORES (DESIGN MELHORADO)
+// 3. SIMULAÇÃO DE TAXAS
 function simular() {
     let v = parseFloat(document.getElementById("valor").value);
     if (!v) { alert("Informe o valor da venda."); return; }
@@ -93,19 +93,12 @@ function simular() {
 
     parcelas.forEach(p => {
         let tMP = (p === "pix") ? mp.pix : (p === "debito" ? mp.debito : mp[p]);
-        
         if (tMP !== null && !isNaN(tMP)) {
             let tOut = (p === "pix") ? out.pix : (p === "debito" ? out.debito : out[p]);
             let nome = p === "pix" ? "Pix" : p === "debito" ? "Débito" : p + "x";
-            
             let classeMP = tMP > tOut ? 'taxaRuim' : 'taxaBoa'; 
             let classeOut = tOut > tMP ? 'taxaRuim' : '';
-            
-            html += `<tr>
-                        <td><b>${nome}</b></td>
-                        <td class="taxa-destaque ${classeMP}">${tMP.toFixed(2)}%</td>
-                        <td class="taxa-destaque ${classeOut}">${tOut.toFixed(2)}%</td>
-                     </tr>`;
+            html += `<tr><td><b>${nome}</b></td><td class="taxa-destaque ${classeMP}">${tMP.toFixed(2)}%</td><td class="taxa-destaque ${classeOut}">${tOut.toFixed(2)}%</td></tr>`;
         }
     });
     html += "</table>";
@@ -121,7 +114,7 @@ function atualizarBarra() {
     document.getElementById("barra").style.background = (Math.round(soma) === 100) ? "#4CAF50" : "#FFE600";
 }
 
-// 4. SIMULAÇÃO DE FATURAMENTO
+// 4. SIMULAÇÃO DE FATURAMENTO E COFRINHO
 function simularFaturamento() {
     let soma = 0;
     IDs_SHARE.forEach(id => soma += parseFloat(document.getElementById(id).value) || 0);
@@ -137,8 +130,7 @@ function simularFaturamento() {
         return el ? parseFloat(el.value) || 0 : 0;
     };
 
-    let custoMP = 0;
-    let custoConc = 0;
+    let custoMP = 0; let custoConc = 0;
     const shareMap = { pix: 'share_pix', debito: 'share_debito', 1: 'share_1x', 2: 'share_2x', 3: 'share_3x', 4: 'share_4x', 6: 'share_6x', 10: 'share_10x' };
 
     Object.keys(shareMap).forEach(p => {
@@ -149,11 +141,9 @@ function simularFaturamento() {
     });
 
     let fixosGerais = (parseFloat(fixo_sistema.value)||0) + (parseFloat(fixo_maquina.value)||0) + (parseFloat(fixo_cesta.value)||0) + (parseFloat(fixo_manutencao.value)||0);
-    
     let volPixApp = parseFloat(document.getElementById("vol_pix_app").value) || 0;
     let taxaPixApp = parseFloat(document.getElementById("taxa_pix_app").value) || 0;
     let custoPixExtra = volPixApp * (taxaPixApp / 100);
-
     custoConc += (fixosGerais + custoPixExtra);
 
     let ecoMes = custoConc - custoMP;
@@ -221,13 +211,8 @@ function exportarRelatorio(apenasTaxas) {
 🗒️Simulação com validade de 07 dias, a contar da data de recebimento desse.`;
 
     let checkboxAtivo = apenasTaxas ? document.getElementById("chk_info_simples") : document.getElementById("chk_info_completo");
-    
-    if (checkboxAtivo.checked) {
-        boxInfoAdicional.style.display = "block";
-        boxInfoAdicional.innerHTML = textoAdicional;
-    } else {
-        boxInfoAdicional.style.display = "none";
-    }
+    boxInfoAdicional.style.display = checkboxAtivo.checked ? "block" : "none";
+    if (checkboxAtivo.checked) boxInfoAdicional.innerHTML = textoAdicional;
 
     if (apenasTaxas) {
         boxCorpo.style.display = "none"; boxGrafico.style.display = "none";
@@ -261,4 +246,40 @@ async function processarOCR(event, pref) {
         if(document.getElementById(id)) document.getElementById(id).value = t.toFixed(2);
     }
     alert("Pronto!");
+}
+
+// 6. NOVO: DESCOBRE TAXA (CALCULADORA REVERSA)
+function toggleDescobreTaxa() {
+    const box = document.getElementById("boxDescobreTaxa");
+    box.style.display = (box.style.display === "none" || box.style.display === "") ? "block" : "none";
+}
+
+function calcularDescobreTaxa(origem) {
+    let valorOp = parseFloat(document.getElementById("calc_valor_op").value) || 0;
+    let valorRec = parseFloat(document.getElementById("calc_valor_rec").value) || 0;
+    let taxaPercent = parseFloat(document.getElementById("calc_taxa_perc").value) || 0;
+
+    const displayTaxa = document.getElementById("res_taxa_percent");
+    const displayDesconto = document.getElementById("res_valor_desc");
+    const displayRecebido = document.getElementById("res_valor_final");
+
+    if (valorOp > 0) {
+        if (origem === 'recebido' && valorRec > 0) {
+            let taxa = ((valorRec / valorOp) - 1) * 100;
+            let desconto = valorOp - valorRec;
+            document.getElementById("calc_taxa_perc").value = taxa.toFixed(2);
+            displayTaxa.innerText = `${taxa.toFixed(2)}%`;
+            displayDesconto.innerText = `- $ ${desconto.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            displayRecebido.innerText = `$ ${valorRec.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        } 
+        else if (origem === 'taxa' || (origem === 'valor' && taxaPercent !== 0)) {
+            let taxaReal = taxaPercent > 0 ? taxaPercent * -1 : taxaPercent;
+            let valorFinal = valorOp + (valorOp * (taxaReal / 100));
+            let desconto = valorOp - valorFinal;
+            document.getElementById("calc_valor_rec").value = valorFinal.toFixed(2);
+            displayTaxa.innerText = `${taxaReal.toFixed(2)}%`;
+            displayDesconto.innerText = `- $ ${desconto.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            displayRecebido.innerText = `$ ${valorFinal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        }
+    }
 }
