@@ -1,5 +1,5 @@
 /* PROJETO: Falcões da BA21 - Simulador Premium
-   VERSÃO: Corrigida - Comparação Dinâmica
+   MELHORIA DE OCR: Pré-processamento de Imagem e Sanitização de Dados
 */
 
 // 1. PROTEÇÃO E BLINDAGEM
@@ -73,35 +73,27 @@ function limparSecao(tipo) {
 
 function simular() {
     let html = `<table class="tabela-moderna"><tr><th>Plano</th><th>Mercado Pago</th><th>Concorrência</th></tr>`;
-    
-    // Pix, Débito e 1x sempre aparecem
     const bases = ["pix", "debito", "1"];
     bases.forEach(p => {
         let idMP = (p === "pix") ? "mp_pix" : (p === "debito" ? "mp_debito" : "mp1");
         let idOut = (p === "pix") ? "out_pix_manual" : (p === "debito" ? "out_debito_manual" : "out1_manual");
-        
         let tMP = parseFloat(document.getElementById(idMP).value) || 0;
         let tOut = parseFloat(document.getElementById(idOut).value) || 0;
         let nome = p === "pix" ? "Pix" : p === "debito" ? "Débito" : "1x";
-        
         let classeMP = tMP > tOut ? 'taxaRuim' : 'taxaBoa'; 
         let classeOut = tOut > tMP ? 'taxaRuim' : '';
         html += `<tr><td><b>${nome}</b></td><td class="taxa-destaque ${classeMP}">${tMP.toFixed(2)}%</td><td class="taxa-destaque ${classeOut}">${tOut.toFixed(2)}%</td></tr>`;
     });
-
-    // Parcelas de 2x a 18x só aparecem se houver valor no Mercado Pago
     for (let i = 2; i <= 18; i++) {
         let valMP = document.getElementById("mp" + i).value;
         if (valMP !== "" && !isNaN(valMP)) {
             let tMP = parseFloat(valMP);
             let tOut = parseFloat(document.getElementById("out" + i + "_manual").value) || 0;
-            
             let classeMP = tMP > tOut ? 'taxaRuim' : 'taxaBoa'; 
             let classeOut = tOut > tMP ? 'taxaRuim' : '';
             html += `<tr><td><b>${i}x</b></td><td class="taxa-destaque ${classeMP}">${tMP.toFixed(2)}%</td><td class="taxa-destaque ${classeOut}">${tOut.toFixed(2)}%</td></tr>`;
         }
     }
-
     html += "</table>";
     document.getElementById("resultado").innerHTML = html;
     document.getElementById("btnExportarSimples").style.display = "block";
@@ -121,14 +113,12 @@ function simularFaturamento() {
     if (Math.round(soma) !== 100) return alert("O Share total deve somar 100%!");
     let f = parseFloat(faturamento.value) || 0;
     if(f <= 0) return alert("Informe o faturamento mensal.");
-
     const getTaxa = (p, tipo) => {
         let id = (tipo === 'mp') ? (p === 'pix' ? 'mp_pix' : p === 'debito' ? 'mp_debito' : 'mp' + p) : 
                                   (p === 'pix' ? 'out_pix_manual' : p === 'debito' ? 'out_debito_manual' : 'out' + p + '_manual');
         let el = document.getElementById(id);
         return el ? parseFloat(el.value) || 0 : 0;
     };
-
     let custoMP = 0; let custoConc = 0;
     const shareMap = { pix: 'share_pix', debito: 'share_debito', 1: 'share_1x', 2: 'share_2x', 3: 'share_3x', 4: 'share_4x', 6: 'share_6x', 10: 'share_10x' };
     Object.keys(shareMap).forEach(p => {
@@ -137,12 +127,10 @@ function simularFaturamento() {
         custoMP += valorFatia * (getTaxa(p, 'mp') / 100);
         custoConc += valorFatia * (getTaxa(p, 'out') / 100);
     });
-
     let fixosGerais = (parseFloat(fixo_sistema.value)||0) + (parseFloat(fixo_maquina.value)||0) + (parseFloat(fixo_cesta.value)||0) + (parseFloat(fixo_manutencao.value)||0);
     let volPixApp = parseFloat(document.getElementById("vol_pix_app").value) || 0;
     let taxaPixApp = parseFloat(document.getElementById("taxa_pix_app").value) || 0;
     custoConc += (fixosGerais + (volPixApp * (taxaPixApp / 100)));
-
     let ecoMes = custoConc - custoMP;
     let res = parseFloat(cofrinho_reserva.value) || 0;
     let cdi = (window.selicAtual || 10.75) - 0.1;
@@ -156,7 +144,6 @@ function simularFaturamento() {
         }
         return s;
     };
-
     document.getElementById("resultadoFaturamento").innerHTML = `
         <div class="resumo-financeiro">
             <h4 style="margin-top:0">💰 Rentabilidade Real Individualizada</h4>
@@ -169,7 +156,6 @@ function simularFaturamento() {
             <b>Saldo 1 Ano:</b> R$ ${calcCofre(12).toFixed(2)}<br>
             <b>Saldo 5 Anos:</b> R$ ${calcCofre(60).toFixed(2)}
         </div>`;
-
     if (window.g) window.g.destroy();
     window.g = new Chart(document.getElementById("graficoEconomia"), {
         type: 'bar',
@@ -183,28 +169,13 @@ function exportarRelatorio(apenasTaxas) {
     document.getElementById("rel_cliente").innerText = document.getElementById("input_cliente").value || "---";
     document.getElementById("rel_data").innerText = document.getElementById("input_data").value;
     document.getElementById("rel_tabela_taxas").innerHTML = "<h3>Comparativo de Taxas</h3>" + document.getElementById("resultado").innerHTML;
-    
     let boxCorpo = document.getElementById("rel_share_cofrinho");
     let boxGrafico = document.getElementById("rel_grafico_box");
     let boxInfoAdicional = document.getElementById("rel_info_adicional");
-
-    const textoCompleto = `<b>Informações adicionais:</b>
-➡️ Máquina sem aluguel
-➡️ Conta sem anuidade e sem taxas administrativas
-➡️ Link de pagamento com recebimento na hora e com as mesmas condições de taxas da máquina
-➡️ Parcelamento até 18x
-➡️ Mesma taxa para todas as bandeiras (Visa, Master, Elo, Hipercard, Amex, Diners)
-➡️ Todos valores entram na hora na conta, mesmo em feriado e final de semana, ou seja: PASSOU O CARTAO, RECEBIMENTO IMEDIATO 😃
-➡️ Rendimentos diários na conta através do nosso cofrinho
-➡️ Fácil acesso ao App
-➡️ NOVIDADE: Software de gestão completo para o seu negócio (consulte condições)
-
-🗒️Simulação com validade de 07 dias, a contar da data de recebimento desse.`;
-
+    const textoCompleto = `<b>Informações adicionais:</b>\n➡️ Máquina sem aluguel\n➡️ Conta sem anuidade e taxas administrativas\n➡️ Link de pagamento com recebimento na hora\n➡️ Parcelamento até 18x\n➡️ Rendimentos diários no cofrinho\n➡️ NOVIDADE: Software de gestão completo`;
     let checkboxAtivo = apenasTaxas ? document.getElementById("chk_info_simples") : document.getElementById("chk_info_completo");
     boxInfoAdicional.style.display = checkboxAtivo.checked ? "block" : "none";
     if (checkboxAtivo.checked) boxInfoAdicional.innerHTML = textoCompleto;
-
     if (apenasTaxas) {
         boxCorpo.style.display = "none"; boxGrafico.style.display = "none";
     } else {
@@ -212,7 +183,6 @@ function exportarRelatorio(apenasTaxas) {
         boxCorpo.innerHTML = "<h3>Rentabilidade e Projeção</h3>" + document.getElementById("resultadoFaturamento").innerHTML;
         if (window.g) document.getElementById("img_grafico").src = document.getElementById("graficoEconomia").toDataURL();
     }
-
     setTimeout(() => {
         html2canvas(document.getElementById("areaRelatorio"), { scale: 2 }).then(canvas => {
             let link = document.createElement("a");
@@ -259,18 +229,66 @@ function calcularDescobreTaxa(origem) {
     }
 }
 
+// 6. OCR DE ELITE (COM PRÉ-PROCESSAMENTO E SANITIZAÇÃO)
 async function processarOCR(event, pref) {
     const file = event.target.files[0];
     if(!file) return;
-    alert("Processando imagem...");
-    const res = await Tesseract.recognize(file, 'por');
-    let txt = res.data.text.toLowerCase().replace(/,/g, ".");
-    let regex = /(\d{1,2})\s*x\s*([\d.]+)/g;
-    let match;
-    while ((match = regex.exec(txt)) !== null) {
-        let p = parseInt(match[1]), t = parseFloat(match[2]);
-        let id = (p === 1) ? (pref === "mp" ? "mp1" : "out1_manual") : (pref + p + (pref === "out" ? "_manual" : ""));
-        if(document.getElementById(id)) document.getElementById(id).value = t.toFixed(2);
-    }
-    alert("Pronto!");
+    
+    alert("Iniciando Escaneamento Inteligente...");
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = async () => {
+            // Criar um Canvas para pré-processar a imagem (Melhorar Contraste)
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            
+            ctx.drawImage(img, 0, 0);
+            
+            // Filtro de Escala de Cinza e Threshold (Preto e Branco puro)
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                const v = avg > 128 ? 255 : 0; // Se for claro vira branco, se escuro vira preto
+                data[i] = data[i+1] = data[i+2] = v;
+            }
+            ctx.putImageData(imageData, 0, 0);
+
+            // Iniciar Tesseract com a imagem tratada
+            const worker = await Tesseract.createWorker('por');
+            const res = await worker.recognize(canvas.toDataURL('image/png'));
+            
+            // SANITIZAÇÃO DO TEXTO EXTRAÍDO
+            let txt = res.data.text.toLowerCase()
+                .replace(/,/g, ".")       // Converte vírgulas em pontos
+                .replace(/o/g, "0")       // Letra O vira Zero
+                .replace(/i|l/g, "1")     // Letra I ou L vira Um
+                .replace(/s/g, "5");      // Letra S vira Cinco
+
+            // Regex Tolerante: Procura padrões como "2x 3.05" ou "2 3.05"
+            let regex = /(\d{1,2})\s*[x\s-]*\s*([\d.]+)/g;
+            let match;
+            let encontrados = 0;
+
+            while ((match = regex.exec(txt)) !== null) {
+                let p = parseInt(match[1]), t = parseFloat(match[2]);
+                if (p >= 1 && p <= 18 && t < 100) { // Validação básica para evitar erros
+                    let id = (p === 1) ? (pref === "mp" ? "mp1" : "out1_manual") : (pref + p + (pref === "out" ? "_manual" : ""));
+                    if(document.getElementById(id)) {
+                        document.getElementById(id).value = t.toFixed(2);
+                        encontrados++;
+                    }
+                }
+            }
+            
+            await worker.terminate();
+            alert(encontrados > 0 ? `Pronto! ${encontrados} taxas identificadas.` : "Não consegui ler as taxas. Tente uma foto mais nítida.");
+        };
+    };
+    reader.readAsDataURL(file);
 }
