@@ -1,4 +1,4 @@
-/* PROJETO: Falcões da BA21 - Simulador Premium
+/* PROJETO: Compara taxa - Simulador Premium
    MELHORIA DE OCR: Pré-processamento de Imagem e Sanitização de Dados
 */
 
