@@ -1,5 +1,5 @@
 /* PROJETO: Compara taxa - Simulador Premium
-   MELHORIA: Cálculo de Cofrinho Assertivo com IR regressivo
+   VERSÃO: Cálculo de Cofrinho Assertivo (Líquido de IR)
 */
 
 // 1. PROTEÇÃO E BLINDAGEM
@@ -43,7 +43,6 @@ async function buscarCDI() {
     try {
         const r = await fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados/ultimos/1?formato=json');
         const d = await r.json();
-        // A SELIC vem como taxa anual (ex: 10.75). O CDI é aprox. 0.10 abaixo.
         window.selicAtual = parseFloat(d[0].valor);
     } catch (e) { window.selicAtual = 10.75; }
 }
@@ -108,7 +107,6 @@ function atualizarBarra() {
     document.getElementById("barra").style.background = (Math.round(soma) === 100) ? "#4CAF50" : "#FFE600";
 }
 
-// --- NOVO CÁLCULO ASSERTIVO DO COFRINHO ---
 function simularFaturamento() {
     let soma = 0;
     IDs_SHARE.forEach(id => soma += parseFloat(document.getElementById(id).value) || 0);
@@ -139,7 +137,9 @@ function simularFaturamento() {
 
     let ecoMes = custoConc - custoMP;
     let resMensal = parseFloat(cofrinho_reserva.value) || 0;
-    let cdiAnual = (window.selicAtual || 10.75) - 0.1;
+    
+    // SELIC -> CDI (Spread de 0.10)
+    let cdiAnual = (window.selicAtual || 10.75) - 0.10;
     let alvoPerc = (parseFloat(cofrinho_cdi_alvo.value) || 105) / 100;
 
     const calcInvestimento = (meses) => {
@@ -152,12 +152,11 @@ function simularFaturamento() {
         for(let i=1; i<=meses; i++){
             saldoTotal += resMensal;
             
-            // Regra de faixas do Mercado Pago
-            let taxaAplicada = taxaMensalBase;
+            let taxaAplicada = taxaMensalBase; // Default 100% CDI
             if (saldoTotal <= 10000) {
-                taxaAplicada = taxaMensalBase * alvoPerc;
+                taxaAplicada = taxaMensalBase * alvoPerc; // Aplica o alvo (ex: 115% CDI)
             } else if (saldoTotal > 100000) {
-                taxaAplicada = 0; // Acima de 100k não rende conforme sua descrição
+                taxaAplicada = 0; // Acima de 100k não rende
             }
 
             let rendimentoMes = saldoTotal * taxaAplicada;
@@ -165,14 +164,11 @@ function simularFaturamento() {
             saldoTotal += rendimentoMes;
         }
 
-        // Desconto de IR sobre o Lucro (Tabela Regressiva)
+        // Desconto de IR (Tabela Regressiva)
         let aliquotaIR = meses <= 6 ? 0.225 : (meses <= 12 ? 0.20 : (meses <= 24 ? 0.175 : 0.15));
         let irDevido = lucroTotal * aliquotaIR;
         
-        return {
-            final: saldoTotal - irDevido,
-            lucroLiquido: lucroTotal - irDevido
-        };
+        return saldoTotal - irDevido;
     };
 
     let result12 = calcInvestimento(12);
@@ -181,50 +177,34 @@ function simularFaturamento() {
     document.getElementById("resultadoFaturamento").innerHTML = `
         <div class="resumo-financeiro">
             <h4 style="margin-top:0">💰 Rentabilidade Real Individualizada</h4>
-            <b>Custo Operacional MP:</b> R$ ${custoMP.toFixed(2)}<br>
-            <b>Custo Operacional Conc.:</b> R$ ${custoConc.toFixed(2)}<br>
             <b>Economia Mensal:</b> <span style="color:${ecoMes > 0 ? '#007bff' : 'red'}; font-size:16px; font-weight:bold">R$ ${ecoMes.toFixed(2)}</span><br>
             <b>Economia em 1 Ano:</b> R$ ${(ecoMes * 12).toFixed(2)}<br>
             <b style="color: #2e7d32; font-size:16px;">Economia em 5 Anos: R$ ${(ecoMes * 60).toFixed(2)}</b><hr>
-            <h4>📈 Projeção Cofrinho (Líquido de IR)</h4>
-            <b>Saldo 1 Ano:</b> R$ ${result12.final.toFixed(2)}<br>
-            <b>Saldo 5 Anos:</b> R$ ${result60.final.toFixed(2)}<br>
-            <small style="color: #666">* Já descontado IR de ${result12.lucroLiquido > 0 ? '20%' : '15%'}</small>
+            <h4>📈 Projeção Cofrinho (Líquido de IRPF)</h4>
+            <b>Saldo 1 Ano:</b> R$ ${result12.toFixed(2)}<br>
+            <b>Saldo 5 Anos:</b> R$ ${result60.toFixed(2)}
         </div>`;
 
     if (window.g) window.g.destroy();
     window.g = new Chart(document.getElementById("graficoEconomia"), {
         type: 'bar',
-        data: { labels: ["Eco. 1 Ano", "Eco. 5 Anos", "Cofre 5 Anos"], datasets: [{ label: 'R$', data: [ecoMes*12, ecoMes*60, result60.final], backgroundColor: ['#FFE600','#FFD400','#3483FA'] }] },
+        data: { labels: ["Eco. 1 Ano", "Eco. 5 Anos", "Cofre 5 Anos"], datasets: [{ label: 'R$', data: [ecoMes*12, ecoMes*60, result60], backgroundColor: ['#FFE600','#FFD400','#3483FA'] }] },
         options: { animation: false }
     });
 }
 
-// 4. EXPORTAÇÃO E OCR (MANTIDOS CONFORME SOLICITADO)
 function exportarRelatorio(apenasTaxas) {
     document.getElementById("rel_loja").innerText = document.getElementById("input_loja").value || "---";
     document.getElementById("rel_cliente").innerText = document.getElementById("input_cliente").value || "---";
     document.getElementById("rel_data").innerText = document.getElementById("input_data").value;
     document.getElementById("rel_tabela_taxas").innerHTML = "<h3>Comparativo de Taxas</h3>" + document.getElementById("resultado").innerHTML;
-    
     let boxCorpo = document.getElementById("rel_share_cofrinho");
     let boxGrafico = document.getElementById("rel_grafico_box");
     let boxInfoAdicional = document.getElementById("rel_info_adicional");
-
-    const textoCompleto = `<b>Informações adicionais:</b>
-➡️ Máquina sem aluguel
-➡️ Conta sem anuidade e sem taxas administrativas
-➡️ Link de pagamento com recebimento na hora e mesmas taxas da point
-➡️ Parcelamento até 18x
-➡️ Rendimentos diários no cofrinho
-➡️ NOVIDADE: Software de gestão completo (consulte condições)
-
-🗒️Simulação com validade de 07 dias, a contar da data de recebimento desse.`;
-
+    const textoCompleto = `<b>Informações adicionais:</b>\n➡️ Máquina sem aluguel\n➡️ Conta sem anuidade e taxas administrativas\n➡️ Link de pagamento com recebimento na hora e mesmas taxas da point\n➡️ Parcelamento até 18x\n➡️ Rendimentos diários no cofrinho\n➡️ NOVIDADE: Software de gestão completo (consulte condições)`;
     let checkboxAtivo = apenasTaxas ? document.getElementById("chk_info_simples") : document.getElementById("chk_info_completo");
     boxInfoAdicional.style.display = checkboxAtivo.checked ? "block" : "none";
     if (checkboxAtivo.checked) boxInfoAdicional.innerHTML = textoCompleto;
-
     if (apenasTaxas) {
         boxCorpo.style.display = "none"; boxGrafico.style.display = "none";
     } else {
@@ -232,7 +212,6 @@ function exportarRelatorio(apenasTaxas) {
         boxCorpo.innerHTML = "<h3>Rentabilidade e Projeção</h3>" + document.getElementById("resultadoFaturamento").innerHTML;
         if (window.g) document.getElementById("img_grafico").src = document.getElementById("graficoEconomia").toDataURL();
     }
-
     setTimeout(() => {
         html2canvas(document.getElementById("areaRelatorio"), { scale: 2 }).then(canvas => {
             let link = document.createElement("a");
@@ -282,7 +261,7 @@ function calcularDescobreTaxa(origem) {
 async function processarOCR(event, pref) {
     const file = event.target.files[0];
     if(!file) return;
-    alert("Iniciando Escaneamento...");
+    alert("Escaneando...");
     const reader = new FileReader();
     reader.onload = async (e) => {
         const worker = await Tesseract.createWorker('por');
@@ -299,7 +278,6 @@ async function processarOCR(event, pref) {
             }
         }
         await worker.terminate();
-        alert("Escaneamento finalizado.");
     };
     reader.readAsDataURL(file);
 }
