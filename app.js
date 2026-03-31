@@ -1,5 +1,5 @@
 /* PROJETO: Compara taxa - Simulador Premium
-   VERSÃO: Correção de Exportação e Cofrinho Assertivo
+   VERSÃO: Final Consolidada - Ajustes Comerciais e Campo Executivo
 */
 
 // 1. PROTEÇÃO E BLINDAGEM
@@ -67,7 +67,7 @@ function limparSecao(tipo) {
         });
     } else if (tipo === 'cofrinho') {
         document.getElementById("cofrinho_reserva").value = "";
-        document.getElementById("cofrinho_cdi_alvo").value = "105";
+        document.getElementById("cofrinho_cdi_alvo").value = "115";
     }
 }
 
@@ -138,7 +138,7 @@ function simularFaturamento() {
     let ecoMes = custoConc - custoMP;
     let resMensal = parseFloat(cofrinho_reserva.value) || 0;
     let cdiAnual = (window.selicAtual || 10.75) - 0.10;
-    let alvoPerc = (parseFloat(cofrinho_cdi_alvo.value) || 105) / 100;
+    let alvoPerc = (parseFloat(cofrinho_cdi_alvo.value) || 115) / 100;
 
     const calcInvestimento = (meses) => {
         let saldoTotal = 0;
@@ -161,7 +161,7 @@ function simularFaturamento() {
     let result60 = calcInvestimento(60);
 
     document.getElementById("resultadoFaturamento").innerHTML = `
-        <div class="resumo-financeiro" id="res_financeiro_dados">
+        <div class="resumo-financeiro">
             <h4 style="margin-top:0">💰 Rentabilidade Real Individualizada</h4>
             <b>Custo Operacional MP:</b> R$ ${custoMP.toFixed(2)}<br>
             <b>Custo Operacional Conc.:</b> R$ ${custoConc.toFixed(2)}<br>
@@ -184,6 +184,7 @@ function simularFaturamento() {
 function exportarRelatorio(apenasTaxas) {
     document.getElementById("rel_loja").innerText = document.getElementById("input_loja").value || "---";
     document.getElementById("rel_cliente").innerText = document.getElementById("input_cliente").value || "---";
+    document.getElementById("rel_executivo").innerText = document.getElementById("input_executivo").value || "---";
     document.getElementById("rel_data").innerText = document.getElementById("input_data").value;
     document.getElementById("rel_tabela_taxas").innerHTML = "<h3>Comparativo de Taxas</h3>" + document.getElementById("resultado").innerHTML;
     
@@ -193,13 +194,15 @@ function exportarRelatorio(apenasTaxas) {
 
     const textoCompleto = `<b>Informações adicionais:</b>
 ➡️ Máquina sem aluguel
-➡️ Conta sem anuidade e sem taxas administrativas
+➡️ TEF
+➡️ Mesma taxa para todas as bandeiras
+➡️ Conta sem anuidade e taxas administrativas
 ➡️ Link de pagamento com recebimento na hora e mesmas taxas da point
 ➡️ Parcelamento até 18x
-➡️ Mesma taxa para todas as bandeiras
 ➡️ Rendimentos diários no cofrinho
 ➡️ NOVIDADE: Software de gestão completo (consulte condições)
-🗒️Simulação com validade de 07 dias.`;
+
+🗒️Simulação com validade de 07 dias, a contar da data de recebimento desse.`;
 
     let checkboxAtivo = apenasTaxas ? document.getElementById("chk_info_simples") : document.getElementById("chk_info_completo");
     boxInfoAdicional.style.display = checkboxAtivo.checked ? "block" : "none";
@@ -251,6 +254,7 @@ function calcularDescobreTaxa(origem) {
         } else if (origem === 'taxa' || (origem === 'valor' && taxaPercent !== 0)) {
             let taxaReal = taxaPercent > 0 ? taxaPercent * -1 : taxaPercent;
             let valorFinal = valorOp + (valorOp * (taxaReal / 100));
+            document.getElementById("calc_valor_rec").value = valorFinal.toFixed(2);
             document.getElementById("res_taxa_percent").innerText = `${taxaReal.toFixed(2)}%`;
             document.getElementById("res_valor_desc").innerText = `- $ ${(valorOp - valorFinal).toFixed(2)}`;
             document.getElementById("res_valor_final").innerText = `$ ${valorFinal.toFixed(2)}`;
