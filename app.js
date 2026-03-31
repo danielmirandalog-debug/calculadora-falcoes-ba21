@@ -201,7 +201,7 @@ function exportarRelatorio(apenasTaxas) {
     let boxCorpo = document.getElementById("rel_share_cofrinho");
     let boxGrafico = document.getElementById("rel_grafico_box");
     let boxInfoAdicional = document.getElementById("rel_info_adicional");
-    const textoCompleto = `<b>Informações adicionais:</b>\n➡️ Máquina sem aluguel\n➡️ Conta sem anuidade e taxas administrativas\n➡️ Link de pagamento com recebimento na hora e mesmas taxas da point\n➡️ Parcelamento até 18x\n➡️ Rendimentos diários no cofrinho\n➡️ NOVIDADE: Software de gestão completo (consulte condições)`;
+    const textoCompleto = `<b>Informações adicionais:</b>\n➡️ Máquina sem aluguel\n➡️ Mesma taxa para todas as bandeiras\n➡️ Conta sem anuidade e taxas administrativas\n➡️ TEF\n➡️ Link de pagamento com recebimento na hora e mesmas taxas da point\n➡️ Parcelamento até 18x\n➡️ Rendimentos diários no cofrinho\n➡️ NOVIDADE: Software de gestão completo (consulte condições)`;
     let checkboxAtivo = apenasTaxas ? document.getElementById("chk_info_simples") : document.getElementById("chk_info_completo");
     boxInfoAdicional.style.display = checkboxAtivo.checked ? "block" : "none";
     if (checkboxAtivo.checked) boxInfoAdicional.innerHTML = textoCompleto;
