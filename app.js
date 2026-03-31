@@ -1,5 +1,5 @@
 /* PROJETO: Compara taxa - Simulador Premium
-   VERSÃO: Final Consolidada - Ajustes Comerciais e Campo Executivo
+   VERSÃO: Master Consolidada - Correção de Fluxo de Caixa e IRPF
 */
 
 // 1. PROTEÇÃO E BLINDAGEM
@@ -140,21 +140,30 @@ function simularFaturamento() {
     let cdiAnual = (window.selicAtual || 10.75) - 0.10;
     let alvoPerc = (parseFloat(cofrinho_cdi_alvo.value) || 115) / 100;
 
+    // MOTOR FINANCEIRO ASSERTIVO
     const calcInvestimento = (meses) => {
-        let saldoTotal = 0;
-        let lucroTotal = 0;
+        let saldoAtual = 0;
+        let lucroBrutoAcumulado = 0;
         let taxaMensalBase = Math.pow((1 + (cdiAnual / 100)), (1/12)) - 1;
+
         for(let i=1; i<=meses; i++){
-            saldoTotal += resMensal;
+            // 1. Calcula juro sobre o que JÁ ESTAVA na conta (saldo anterior)
             let taxaAplicada = taxaMensalBase;
-            if (saldoTotal <= 10000) { taxaAplicada = taxaMensalBase * alvoPerc; }
-            else if (saldoTotal > 100000) { taxaAplicada = 0; }
-            let rendimentoMes = saldoTotal * taxaAplicada;
-            lucroTotal += rendimentoMes;
-            saldoTotal += rendimentoMes;
+            if (saldoAtual <= 10000) { taxaAplicada = taxaMensalBase * alvoPerc; }
+            else if (saldoAtual > 100000) { taxaAplicada = 0; }
+
+            let rendimentoDoMes = saldoAtual * taxaAplicada;
+            lucroBrutoAcumulado += rendimentoDoMes;
+            
+            // 2. Atualiza saldo com juros + NOVO aporte (que só rende no mês seguinte)
+            saldoAtual += rendimentoDoMes + resMensal;
         }
+
+        // Desconto de IR Regressivo sobre o lucro acumulado
         let aliquotaIR = meses <= 6 ? 0.225 : (meses <= 12 ? 0.20 : (meses <= 24 ? 0.175 : 0.15));
-        return saldoTotal - (lucroTotal * aliquotaIR);
+        let valorFinalLiquido = saldoAtual - (lucroBrutoAcumulado * aliquotaIR);
+        
+        return valorFinalLiquido;
     };
 
     let result12 = calcInvestimento(12);
@@ -196,7 +205,7 @@ function exportarRelatorio(apenasTaxas) {
 ➡️ Máquina sem aluguel
 ➡️ TEF
 ➡️ Mesma taxa para todas as bandeiras
-➡️ Conta sem anuidade e taxas administrativas
+➡️ Conta sem anuidade e sem taxas administrativas
 ➡️ Link de pagamento com recebimento na hora e mesmas taxas da point
 ➡️ Parcelamento até 18x
 ➡️ Rendimentos diários no cofrinho
