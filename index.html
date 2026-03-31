@@ -49,10 +49,13 @@
     <div class="card">
         <h3>Atendimento <button type="button" class="btn-limpar" onclick="location.reload()">Resetar</button></h3>
         <div class="grid-taxas">
-            <span><label>Empresa</label><input id="input_loja" type="text" placeholder="Loja"></span>
-            <span><label>Responsável</label><input id="input_cliente" type="text" placeholder="Cliente"></span>
+            <span><label>Seller</label><input id="input_loja" type="text" placeholder="Nome do Seller"></span>
+            <span><label>Responsável</label><input id="input_cliente" type="text" placeholder="Nome do Cliente"></span>
         </div>
-        <span><label>Data</label><input id="input_data" type="text" readonly style="background:#f9f9f9"></span>
+        <div class="grid-taxas">
+            <span><label>Executivo</label><input id="input_executivo" type="text" placeholder="Nome do Executivo"></span>
+            <span><label>Data</label><input id="input_data" type="text" readonly style="background:#f9f9f9"></span>
+        </div>
     </div>
 
     <div class="card">
@@ -162,10 +165,10 @@
 <div id="modalTermos" class="modal-overlay">
     <div class="modal-content">
         <h2 style="margin-top:0; text-align:center; color:#333">⚠️ Termos e Isenção</h2>
-        <p>Esta aplicação é uma ferramenta independente. Ao prosseguir, você concorda que:</p>
-        <p>1. <b>Isenção de Vínculo:</b> Este software NÃO possui vínculo oficial com o Mercado Pago.<br>
-           2. <b>Responsabilidade:</b> Todas as taxas inseridas são de inteira responsabilidade do usuário.<br>
-           3. <b>Precisão:</b> Os dados gerados são estimativas e não garantem rentabilidade futura.</p>
+        <p>Esta aplicação é uma ferramenta independente de simulação financeira. Ao prosseguir, você concorda que:</p>
+        <p>1. <b>Isenção de Vínculo:</b> Este software NÃO possui vínculo oficial com o Mercado Pago ou suas afiliadas.<br>
+           2. <b>Responsabilidade:</b> Todas as taxas inseridas e os relatórios gerados são de inteira responsabilidade do usuário.<br>
+           3. <b>Precisão:</b> Os dados gerados são estimativas baseadas em informações manuais e não garantem rentabilidade futura.</p>
         <label class="chk-container" style="background:#f9f9f9; padding:15px; border-radius:10px; margin: 20px 0">
             <input type="checkbox" id="chk_termos_uso"> Estou de acordo com os termos
         </label>
@@ -179,9 +182,10 @@
         <p style="font-size:18px; font-weight:bold; color:#666">Proposta Estratégica de Rentabilidade</p>
     </div>
     <div class="info-cli-rel">
-        <div><b>Loja:</b> <br><span id="rel_loja" style="font-size:18px; color:#3483FA; font-weight:800"></span></div>
+        <div><b>Seller:</b> <br><span id="rel_loja" style="font-size:18px; color:#3483FA; font-weight:800"></span></div>
         <div><b>Data:</b> <br><span id="rel_data"></span></div>
-        <div style="grid-column: span 2;"><b>Responsável:</b> <br><span id="rel_cliente" style="font-size:16px; font-weight:600"></span></div>
+        <div><b>Responsável:</b> <br><span id="rel_cliente" style="font-size:16px; font-weight:600"></span></div>
+        <div><b>Executivo:</b> <br><span id="rel_executivo" style="font-size:16px; font-weight:600"></span></div>
     </div>
     <div id="rel_tabela_taxas"></div>
     <div id="rel_share_cofrinho" style="margin-top:25px"></div>
@@ -190,7 +194,7 @@
     <div style="font-size:12px; color:#777; margin-top:40px; border-top:1px solid #eee; padding-top:20px; text-align:justify">
         <p><b>Sobre o Cofrinho:</b> Projeção baseada em aportes mensais fixos. Até R$ 10.000,00 rende o percentual alvo do CDI. De R$ 10.000,01 até R$ 100.000,00, rende 100% do CDI. Acima desse valor, não tem rendimento. Os valores são líquidos de Imposto de Renda (tabela regressiva).</p>
         <p><b>Nota Importante:</b> Esta simulação é uma ferramenta de apoio estratégica. Sujeito a alterações sem aviso prévio.</p>
-        <p><b>Desenvolvido por Marcos Daniel - Falcões BA21.</b></p>
+        <p><b>Desenvolvido por Marcos Daniel.</b></p>
     </div>
 </div>
 
